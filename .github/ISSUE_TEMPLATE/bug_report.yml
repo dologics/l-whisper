@@ -1,0 +1,68 @@
+name: Bug report
+description: Something doesn't work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. …
+        2. …
+    validations:
+      required: true
+  - type: dropdown
+    id: feature
+    attributes:
+      label: Which part?
+      options:
+        [
+          Dictation,
+          File transcription,
+          Meeting recording,
+          Library,
+          AI summary,
+          First-run setup / permissions,
+          Install / update,
+          Other,
+        ]
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: L - Whisper version
+      description: Settings → bottom of the page, or menu bar → About L - Whisper
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: e.g. macOS 15.3
+    validations:
+      required: true
+  - type: dropdown
+    id: chip
+    attributes:
+      label: Chip
+      options: [Apple Silicon (M1/M2/M3/M4…), Intel]
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Whisper model
+      placeholder: e.g. Large v3 Turbo (compact)
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Screenshots or error messages help. Please don't attach private recordings or transcripts.

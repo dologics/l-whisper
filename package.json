@@ -1,0 +1,132 @@
+{
+  "name": "whisper-desktop",
+  "version": "1.1.0",
+  "description": "Local Whisper dictation, file transcription and meeting recording for macOS",
+  "author": "DoLogics",
+  "contributors": [
+    "Mohsin Shoaib (https://github.com/mohsin917)"
+  ],
+  "homepage": "https://github.com/dologics/l-whisper#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dologics/l-whisper.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dologics/l-whisper/issues"
+  },
+  "main": "build/main/main.js",
+  "scripts": {
+    "build": "tsx scripts/build.ts",
+    "start": "npm run build && electron .",
+    "test": "node --import tsx --test test/*.test.ts",
+    "typecheck": "tsc -p tsconfig.json && tsc -p src/renderer/tsconfig.json --noEmit && tsc -p src/recorder/tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "build:native": "bash scripts/build-native.sh",
+    "build:tools": "bash scripts/build-whisper.sh && bash scripts/build-ffmpeg.sh",
+    "install-app": "bash scripts/install-app.sh",
+    "release": "bash scripts/release.sh"
+  },
+  "keywords": [
+    "whisper",
+    "whisper.cpp",
+    "speech-to-text",
+    "dictation",
+    "transcription",
+    "macos",
+    "menu-bar",
+    "electron",
+    "offline",
+    "privacy",
+    "meeting-recorder"
+  ],
+  "license": "MIT",
+  "type": "commonjs",
+  "productName": "L - Whisper",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.19.2",
+    "electron": "^45.2.2",
+    "electron-builder": "^26.18.0",
+    "eslint": "^10.14.0",
+    "globals": "^17.14.0",
+    "prettier": "^3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.1"
+  },
+  "build": {
+    "appId": "com.dologics.lwhisper",
+    "productName": "L - Whisper",
+    "copyright": "© 2026 DoLogics · MIT License",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "build/**/*",
+      "assets/**/*",
+      "!assets/icon-preview.png",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "bin/${arch}/fn-listener",
+        "to": "bin/fn-listener"
+      },
+      {
+        "from": "bin/${arch}/meeting-recorder",
+        "to": "bin/meeting-recorder"
+      },
+      {
+        "from": "bin/${arch}/whisper-server",
+        "to": "bin/whisper-server"
+      },
+      {
+        "from": "bin/${arch}/whisper-cli",
+        "to": "bin/whisper-cli"
+      },
+      {
+        "from": "bin/${arch}/ffmpeg",
+        "to": "bin/ffmpeg"
+      },
+      {
+        "from": "bin/${arch}/ffprobe",
+        "to": "bin/ffprobe"
+      },
+      {
+        "from": "models/ggml-silero-v5.1.2.bin",
+        "to": "models/ggml-silero-v5.1.2.bin"
+      },
+      {
+        "from": "LICENSE",
+        "to": "licenses/LICENSE.txt"
+      },
+      {
+        "from": "THIRD_PARTY_NOTICES.md",
+        "to": "licenses/THIRD_PARTY_NOTICES.md"
+      },
+      {
+        "from": "licenses",
+        "to": "licenses"
+      }
+    ],
+    "mac": {
+      "target": [
+        {
+          "target": "dir",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.productivity",
+      "identity": null,
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "L - Whisper listens while you hold the fn key and turns your speech into text on this Mac.",
+        "NSAudioCaptureUsageDescription": "L - Whisper records the sound of your meetings (other people’s voices) when you start a meeting recording."
+      },
+      "minimumSystemVersion": "14.2"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  // Emits the Node side into build/ (build/main, build/preload, build/shared).
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "rootDir": "src",
+    "outDir": "build"
+  },
+  "include": ["src/main", "src/preload", "src/shared"]
+}

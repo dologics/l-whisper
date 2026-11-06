@@ -1,0 +1,14 @@
+{
+  // Node side: main process + preloads + shared types, and type-checking of tests/scripts.
+  // `npm run typecheck` uses this (no output); `tsconfig.build.json` emits the app code.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2023"],
+    "types": ["node"],
+    "esModuleInterop": true,
+    "noEmit": true
+  },
+  "include": ["src/main", "src/preload", "src/shared", "test", "scripts"]
+}

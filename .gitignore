@@ -1,0 +1,12 @@
+node_modules/
+models/*.bin
+samples/
+dist/
+out/
+.DS_Store
+bin/
+build/
+.deps/
+CLAUDE.local.md
+.claude/settings.local.json
+tasks/

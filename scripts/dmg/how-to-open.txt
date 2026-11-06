@@ -1,0 +1,21 @@
+L - Whisper {{VERSION}} — for Macs with {{CHIP}}
+Speech to text that runs entirely on your Mac.
+© 2026 DoLogics · MIT License · open source at github.com/dologics/l-whisper
+
+INSTALL
+1. Drag "L - Whisper" onto the Applications folder (in this window).
+2. Open Applications and double-click L - Whisper.
+
+FIRST OPEN (once)
+L - Whisper isn't from the Mac App Store, so macOS blocks it the first time:
+3. You'll see "L - Whisper Not Opened" (or "can't be opened"). Click Done / OK.
+4. Open System Settings → Privacy & Security, scroll down, and click "Open Anyway"
+   next to L - Whisper. Confirm with your password or Touch ID.
+5. Open L - Whisper again. A short setup guides you through permissions, your
+   dictation key and downloading a speech model (one time, from the official
+   whisper.cpp files).
+
+Wrong DMG? Apple menu → About This Mac: "Chip: Apple M…" = Apple Silicon DMG,
+"Processor: Intel" = Intel DMG.
+
+Needs macOS 14.2 (Sonoma) or newer. Your audio and text never leave your Mac.

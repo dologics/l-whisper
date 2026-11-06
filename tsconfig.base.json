@@ -1,0 +1,12 @@
+{
+  // Rules shared by every part of the app (Node side and the two windows).
+  "compilerOptions": {
+    "target": "ES2023",
+    "strict": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "sourceMap": false
+  }
+}

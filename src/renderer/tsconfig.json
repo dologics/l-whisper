@@ -1,0 +1,14 @@
+{
+  // Main window page. Compiled as a plain browser script (no imports at runtime), so its
+  // functions stay global — scripts/ui-check.ts calls them (showPage, startFile…).
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": [],
+    "rootDir": "..",
+    "outDir": "../../build"
+  },
+  "include": ["*.ts"]
+}

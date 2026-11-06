@@ -1,0 +1,13 @@
+build/
+dist/
+bin/
+models/
+samples/
+design/
+tasks/
+docs/
+*.md
+package-lock.json
+*.html
+*.css
+.deps/
