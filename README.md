@@ -13,7 +13,7 @@ No account. No subscription. No audio ever leaves your Mac.
 ![macOS 14.2+](https://img.shields.io/badge/macOS-14.2%2B-black?logo=apple)
 ![Apple Silicon + Intel](https://img.shields.io/badge/Apple%20Silicon%20%2B%20Intel-supported-success)
 
-[Download](https://github.com/dologics/l-whisper/releases/latest) · [Features](#features) · [Privacy](#privacy) · [Build from source](#build-from-source) · [Contributing](CONTRIBUTING.md)
+[Download](https://github.com/dologics/l-whisper/releases/latest) · [Features](#features) · [Privacy](#privacy) · [Build from source](#build-from-source) · [Contributing](CONTRIBUTING.md) · [Work with me](#work-with-me)
 
 </div>
 
@@ -165,6 +165,15 @@ See [open issues](https://github.com/dologics/l-whisper/issues) and the [changel
 
 Bug reports, ideas and pull requests are welcome — start with [CONTRIBUTING.md](CONTRIBUTING.md).
 Please follow the [Code of Conduct](CODE_OF_CONDUCT.md). Security issues: see [SECURITY.md](SECURITY.md).
+
+## Work with me
+
+I'm Mohsin Shoaib, and I build L - Whisper at DoLogics. If you'd like a custom version for your team, an
+integration, help with a speech-to-text or AI project, or you just want to collaborate, get in touch:
+
+📧 **[mianmitho@gmail.com](mailto:mianmitho@gmail.com)** · GitHub [mohsin917](https://github.com/mohsin917)
+
+(Bugs and feature ideas are best as [issues](https://github.com/dologics/l-whisper/issues), so everyone can follow along.)
 
 ## Acknowledgements
 
