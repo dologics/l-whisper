@@ -9,7 +9,7 @@ The app is shared as **two DMGs** made by `npm run release`:
 `dist/release/L-Whisper-<version>-arm64.dmg` (Apple Silicon) and `…-x64.dmg` (Intel), plus `L-Whisper-<version>-SHA256.txt`.
 No Apple Developer ID: the app is signed with the self-signed certificate **"Whisper Desktop Local"**, so a friend clicks **Open Anyway** once (explained in `How to open.txt` inside each DMG).
 
-Status (see CLAUDE.md "Where we are"): **1.1.0** (2026-11-06) is the current build for friends; **open source is on hold** (task 23) until it has been tested on other Macs (task 24).
+Status (see CLAUDE.md "Where we are"): **1.1.1** (2026-11-07) is the current build — the first one published as a **GitHub Release** on `dologics/l-whisper` (private until the user makes the repo public).
 
 ## 1. Version numbers (MAJOR.MINOR.PATCH)
 The version lives **only** in `package.json` (`"version"`). Everything else comes from it: Info.plist, the About window, Settings → About, DMG names.
@@ -47,7 +47,7 @@ Say each step before you run it (CLAUDE.md rule 1).
 7. **Update test:** `npm run install-app` on this Mac (= installing over the previous version) → permissions must still be granted (no prompts), settings + model kept. User checks: fn dictation, a short meeting recording, About window.
 8. **Record:** in `CHANGELOG.md` rename `## Unreleased` → `## <x.y.z> — <date>` and start a new empty `## Unreleased`. Commit `release <x.y.z>`, push.
 9. **Tag:** `git tag -a v<x.y.z> -m "L - Whisper <x.y.z>"` → `git push origin v<x.y.z>`. Ask the user whether to merge `dev` into `main` now (only on their yes).
-10. **Share:** the user sends the two DMGs (+ SHA-256 file) from `dist/release/`. Tell them which DMG is which (Apple Silicon vs Intel: Apple menu → About This Mac) and that macOS 14.2+ is needed. DMGs are **not** committed (dist/ is git-ignored). After open-sourcing: attach them to a GitHub Release instead.
+10. **Publish:** `gh release create v<x.y.z> dist/release/L-Whisper-<x.y.z>-arm64.dmg dist/release/L-Whisper-<x.y.z>-x64.dmg dist/release/L-Whisper-<x.y.z>-SHA256.txt --title "L - Whisper <x.y.z>" --notes-file <notes>` (notes = that version's CHANGELOG section + which DMG is which + Open Anyway + macOS 14.2+). DMGs are **not** committed (dist/ is git-ignored). Friends can download from the Release page.
 
 ## 5. Things to look for in any new feature (so releases stay safe)
 - Works on **both chips**? New native code → both `bin/arm64` and `bin/x64`; nothing that needs Metal/Apple-Silicon-only APIs without a fallback (Intel build = whisper.cpp on CPU).
@@ -61,4 +61,5 @@ Say each step before you run it (CLAUDE.md rule 1).
 | Version | Date | Notes |
 |---|---|---|
 | 1.0.0 | 2026-11-05 | First shared build (tasks 1–22). Tag `v1.0.0`. DMGs: arm64 148 MB, x64 156 MB. |
+| 1.1.1 | 2026-11-07 | Open-source prep (task 23): MIT © DoLogics credits, licences in `Contents/Resources/licenses/`, `~` path in AI status. First version in the fresh repo + first GitHub Release. DMGs: arm64 155 MB, x64 163 MB. Tested: both DMGs (plist, licences, signature), arm64 as new user (tiny download + transcribe), x64 starts under Rosetta; update over 1.1.0 kept settings. |
 | 1.1.0 | 2026-11-06 | Library (task 25) + AI summary (task 26). Tag `v1.1.0`. DMGs: arm64 148 MB, x64 156 MB. Both tested as new user (tiny model) incl. Library; update over 1.0.0 on this Mac kept settings + login item. Codex path untested (not installed). |

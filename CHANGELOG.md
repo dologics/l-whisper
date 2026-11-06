@@ -5,6 +5,10 @@ Versions: MAJOR.MINOR.PATCH — see the `release-app` skill for when each number
 
 ## Unreleased
 
+_(nothing yet — add one line per user-visible change as tasks finish)_
+
+## 1.1.1 — 2026-11-07
+
 - Open-source ready: MIT licence (© DoLogics), README, contributing guide, security policy and issue templates.
 - About window and Settings now show "© DoLogics · MIT License", the GitHub link and "Built by Mohsin Shoaib"; licences of whisper.cpp, FFmpeg, Silero VAD and the Whisper models ship inside the app.
 - Settings → AI summary shows the tool's location as `~/…` instead of your full home folder path.

@@ -10,10 +10,10 @@
 It is **installed** at `/Applications/L - Whisper.app` (opens at login) and **shared** with other Macs as two DMGs (`npm run release`: Apple Silicon + Intel). Built by Mohsin Shoaib at DoLogics (© DoLogics, MIT). Work here is now updates, fixes, new features and releases.
 
 ## Where we are (keep this current)
-- **Version 1.1.0** (2026-11-06, tag `v1.1.0`) — Library (task 25) + AI summary (task 26). 1.0.0 (2026-11-05) was the first shared build, tasks 1–22. See `CHANGELOG.md`.
+- **Version 1.1.1** (2026-11-07, tag `v1.1.1`, first GitHub Release) — open-source credits, licences in the app. 1.1.0 (2026-11-06) added Library (task 25) + AI summary (task 26); 1.0.0 (2026-11-05) was the first shared build. See `CHANGELOG.md`.
 - **To verify with testers:** AI summary via **Codex** (not installed on this Mac — only tested with a fake CLI); the one-time folder move on a friend's 1.0.0 install.
 - **Now: beta testing on other Macs** — task 24 (`tasks/backlog/24-beta-test-on-other-macs.md`): friends on Apple Silicon **and Intel** install the DMGs; feedback is collected there. Tester checklist to send: `docs/beta-tester-checklist.md`.
-- **Open source** — task 23 (local notes): licence (MIT, © DoLogics), README, docs, credits, cleanup and fresh-clone check **done (2026-11-06)**. The code now lives in a **fresh repo** (one clean starting commit), still **private** until the user makes it public. Before that: a 1.1.1 release (DMGs with the new credits + licences) on GitHub Releases.
+- **Open source** — prep done (task 23, 2026-11-06/07): MIT © DoLogics, README + docs, cleanup, fresh repo, 1.1.1 GitHub Release. Repo `dologics/l-whisper` is still **private** — the user flips it to public; then enable private vulnerability reporting.
 - Open questions for the user: should dictation/file history persist across restarts (now memory-only)? (Decided 2026-11-06: `tasks/` stays local-only; `CLAUDE.md` + `.claude/skills` are public as developer docs.)
 - Not verified yet (only possible on other Macs): Gatekeeper "Open Anyway" with a downloaded DMG, real speed on Intel, permissions kept after a DMG update.
 
