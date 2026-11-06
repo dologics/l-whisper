@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Question or idea to discuss
+    url: https://github.com/dologics/l-whisper/discussions
+    about: Ask questions, share how you use L - Whisper, or talk through an idea before opening an issue.
   - name: Report a security problem (privately)
     url: https://github.com/dologics/l-whisper/security/advisories/new
     about: Please don't open a public issue for security problems.

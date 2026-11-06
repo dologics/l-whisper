@@ -6,6 +6,7 @@ Thanks for helping! Bug reports, ideas, docs fixes and code are all welcome.
 
 - **Bugs:** open an [issue](https://github.com/dologics/l-whisper/issues/new/choose) with your macOS version,
   chip (Apple Silicon / Intel), app version and steps to reproduce.
+- **Questions, ideas, "how do I…?":** start a [Discussion](https://github.com/dologics/l-whisper/discussions).
 - **Bigger changes or new features:** open an issue first so we can agree on the approach before you write code.
 - **Security problems:** please don't open a public issue — see [SECURITY.md](SECURITY.md).
 

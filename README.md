@@ -9,6 +9,7 @@
 No account. No subscription. No audio ever leaves your Mac.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![CI](https://github.com/dologics/l-whisper/actions/workflows/ci.yml/badge.svg)](https://github.com/dologics/l-whisper/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/dologics/l-whisper)](https://github.com/dologics/l-whisper/releases)
 ![macOS 14.2+](https://img.shields.io/badge/macOS-14.2%2B-black?logo=apple)
 ![Apple Silicon + Intel](https://img.shields.io/badge/Apple%20Silicon%20%2B%20Intel-supported-success)
@@ -164,11 +165,12 @@ See [open issues](https://github.com/dologics/l-whisper/issues) and the [changel
 ## Contributing
 
 Bug reports, ideas and pull requests are welcome — start with [CONTRIBUTING.md](CONTRIBUTING.md).
+Questions and ideas: [Discussions](https://github.com/dologics/l-whisper/discussions).
 Please follow the [Code of Conduct](CODE_OF_CONDUCT.md). Security issues: see [SECURITY.md](SECURITY.md).
 
 ## Work with me
 
-I'm Mohsin Shoaib, and I build L - Whisper at DoLogics. If you'd like a custom version for your team, an
+I'm Mohsin Shoaib, and I build L - Whisper. If you'd like a custom version for your team, an
 integration, help with a speech-to-text or AI project, or you just want to collaborate, get in touch:
 
 📧 **[mianmitho@gmail.com](mailto:mianmitho@gmail.com)** · GitHub [mohsin917](https://github.com/mohsin917)

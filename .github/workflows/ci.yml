@@ -1,0 +1,28 @@
+# Automatic checks: runs on every push and pull request (free for public repos).
+# Same checks as locally: typecheck, lint, formatting, unit tests. It doesn't build the
+# native programs or DMGs (no signing certificate here) — the tests don't need them.
+name: CI
+
+on:
+  push:
+    branches: [dev, main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: macos-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npx prettier --check .
+      - run: npm test
