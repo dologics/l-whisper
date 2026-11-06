@@ -9,7 +9,7 @@ The app is shared as **two DMGs** made by `npm run release`:
 `dist/release/L-Whisper-<version>-arm64.dmg` (Apple Silicon) and `…-x64.dmg` (Intel), plus `L-Whisper-<version>-SHA256.txt`.
 No Apple Developer ID: the app is signed with the self-signed certificate **"Whisper Desktop Local"**, so a friend clicks **Open Anyway** once (explained in `How to open.txt` inside each DMG).
 
-Status (see CLAUDE.md "Where we are"): **1.1.1** (2026-11-07) is the current build — the first one published as a **GitHub Release** on `dologics/l-whisper` (private until the user makes the repo public).
+Status (see CLAUDE.md "Where we are"): **1.1.1** (2026-11-07) is the current build — the first one published as a **GitHub Release** on `dologics/l-whisper` (public since 2026-11-07).
 
 ## 1. Version numbers (MAJOR.MINOR.PATCH)
 The version lives **only** in `package.json` (`"version"`). Everything else comes from it: Info.plist, the About window, Settings → About, DMG names.
