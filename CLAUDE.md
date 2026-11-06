@@ -55,6 +55,7 @@ npm run release              # dist/release/L-Whisper-<version>-arm64.dmg + -x64
 ```
 
 ## Facts worth knowing up front
+- **GitHub Actions** (`.github/workflows/ci.yml`) runs typecheck, lint, prettier and tests on a GitHub Mac for every push to `dev`/`main` and every pull request. After pushing, check it's green: `gh run list --limit 1`. Questions from users go to **Discussions**, bugs to Issues.
 - Shell is **zsh** → use arrays for multi-word args (`"${A[@]}"`).
 - App data: `~/Library/Application Support/L - Whisper/` (settings.json, models/). Dev and installed app share it **and** a single-instance lock.
 - Programs the app runs come from `bin/<arch>/` (dev: `arm64` / `x64`) / `Resources/bin/` (installed, only its own chip's): Swift helpers + whisper.cpp v1.9.5 + FFmpeg 9.0.2 (LGPL), built by the scripts above. Homebrew's copies are only handy for manual checks.

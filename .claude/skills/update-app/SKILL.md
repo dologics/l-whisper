@@ -56,6 +56,6 @@ Ask only for what you can't test yourself (holding Fn, real speech, native Save/
 5. Commit **and push** (the user wants every finished task on GitHub):
    ```bash
    git add -A && git commit -m "<task number>: <short summary>"
-   git push   # pushes dev to GitHub
+   git push   # pushes dev to GitHub → starts the CI checks (gh run list --limit 1 → must be green)
    ```
    (Models, samples, node_modules, dist and bin are git-ignored.) Report the commit hash and that it's pushed.
