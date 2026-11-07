@@ -25,6 +25,29 @@ function showPage(name: string): void {
 }
 $$('.nav a').forEach((a) => a.addEventListener('click', () => showPage(a.dataset.page ?? '')));
 
+// ================= Settings tabs =================
+// Each Settings card has data-tab="general|dictation|models|ai|permissions"; the tab bar in the
+// toolbar shows one group at a time. The last tab stays chosen while the app runs.
+function showSettingsTab(name: string): void {
+  const tabs = $$<HTMLButtonElement>('#settingsTabs button');
+  if (!tabs.some((b) => b.dataset.tab === name)) name = 'general'; // unknown name → first tab
+  tabs.forEach((b) => b.classList.toggle('on', b.dataset.tab === name));
+  $$('.page[data-page="settings"] .card[data-tab]').forEach((c) =>
+    c.classList.toggle('tab-off', c.dataset.tab !== name)
+  );
+}
+$$<HTMLButtonElement>('#settingsTabs button').forEach((b) =>
+  b.addEventListener('click', () => showSettingsTab(b.dataset.tab ?? ''))
+);
+showSettingsTab('general');
+
+/** Open a page from main: "settings:models" = Settings page on its Models tab. */
+function showPageFromMain(target: string): void {
+  const [page = '', tab] = target.split(':');
+  showPage(page);
+  if (page === 'settings' && tab) showSettingsTab(tab);
+}
+
 // ================= Transcribe File =================
 let lastResult: TranscribeResult | null = null; // used by Copy/Save
 let lastName = ''; // file name of the transcript on screen (for the Save suggestion)
@@ -292,7 +315,7 @@ $<HTMLInputElement>('#soundsToggle').addEventListener('change', (e) =>
 );
 api.onState(render);
 void api.getState().then(render);
-api.onShowPage(showPage); // e.g. main opens Settings when you dictate without a model
+api.onShowPage(showPageFromMain); // e.g. main opens Settings → Models when you dictate without a model
 
 // ================= first-run setup =================
 // One overlay with 5 pages. The Dictation key and Whisper models cards from Settings are moved
@@ -928,6 +951,7 @@ function renderMarkdown(md: string): Node[] {
 /** Settings → AI summary, scrolled into view and briefly highlighted. */
 function openAiSettings(): void {
   showPage('settings');
+  showSettingsTab('ai');
   const card = $('#aiCard');
   card.scrollIntoView({ behavior: 'smooth', block: 'center' });
   card.classList.add('highlight');

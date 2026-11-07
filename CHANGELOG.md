@@ -5,7 +5,7 @@ Versions: MAJOR.MINOR.PATCH — see the `release-app` skill for when each number
 
 ## Unreleased
 
-_(nothing yet — add one line per user-visible change as tasks finish)_
+- Settings is split into tabs: General · Dictation · Models · AI summary · Permissions. Links like "Settings → AI summary" open the right tab (#3).
 
 ## 1.1.1 — 2026-11-07
 

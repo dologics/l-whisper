@@ -486,7 +486,7 @@ export class WhisperApp {
     this.lastNeedModelAt = Date.now();
     this.sound('none');
     this.showWindow();
-    this.window().webContents.send('app:show-page', 'settings');
+    this.window().webContents.send('app:show-page', 'settings:models'); // Settings page, Models tab
   }
 
   /** Download (or resume) a model, then make it the active model. */

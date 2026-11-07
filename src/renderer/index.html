@@ -253,9 +253,19 @@
 
         <!-- ---------- Settings ---------- -->
         <section class="page" data-page="settings">
-          <header class="toolbar"><h1>Settings</h1></header>
+          <header class="toolbar">
+            <h1>Settings</h1>
+            <!-- tabs: each card below has data-tab="…"; only the chosen tab's cards show -->
+            <div class="filter" id="settingsTabs">
+              <button class="on" data-tab="general">General</button>
+              <button data-tab="dictation">Dictation</button>
+              <button data-tab="models">Models</button>
+              <button data-tab="ai">AI summary</button>
+              <button data-tab="permissions">Permissions</button>
+            </div>
+          </header>
           <div class="content">
-            <div class="card">
+            <div class="card" data-tab="general">
               <div class="setting">
                 <div>Language<div class="hint">English is about 2× faster than auto-detect</div></div>
                 <select id="languageSelect"></select>
@@ -277,7 +287,7 @@
                 <input type="checkbox" id="loginToggle" />
               </div>
             </div>
-            <div class="card" id="hotkeyCard">
+            <div class="card" id="hotkeyCard" data-tab="dictation">
               <h3>Dictation key</h3>
               <p class="card-note">Hold it to talk, double-tap it for hands-free. Use fn, or two keys held together.</p>
               <div class="setting">
@@ -308,7 +318,7 @@
                 </div>
               </div>
             </div>
-            <div class="card" id="modelsCard">
+            <div class="card" id="modelsCard" data-tab="models">
               <h3>Whisper models</h3>
               <p class="card-note">
                 Downloaded once from the official whisper.cpp files on Hugging Face. Your audio and text never leave this
@@ -316,7 +326,7 @@
               </p>
               <div id="modelList"></div>
             </div>
-            <div class="card" id="aiCard">
+            <div class="card" id="aiCard" data-tab="ai">
               <h3>AI summary</h3>
               <p class="card-note">
                 Summarize a meeting or file in the Library with your own Claude or ChatGPT subscription, through the
@@ -341,7 +351,7 @@
               <p class="card-note" id="aiTestResult" hidden></p>
               <p class="card-note warn" id="aiPrivacy" hidden></p>
             </div>
-            <div class="card">
+            <div class="card" data-tab="permissions">
               <h3>Permissions</h3>
               <div class="setting" data-perm="microphone"><div>Microphone<div class="hint">to hear your voice</div></div><span class="perm"></span></div>
               <div class="setting" data-perm="inputMonitoring"><div>Input Monitoring<div class="hint">to detect the dictation key</div></div><span class="perm"></span></div>

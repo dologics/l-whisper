@@ -216,7 +216,15 @@ select { font: inherit; padding: 3px 6px; border-radius: 6px; border: 1px solid 
 .summary li { margin: 2px 0; }
 .ai-buttons { display: flex; gap: 6px; flex: none; }
 #aiStatus { overflow-wrap: anywhere; }
-.card.highlight { box-shadow: 0 0 0 2px var(--accent); transition: box-shadow 0.3s; }
+/* Settings tabs: cards of the other tabs are hidden. Scoped to the Settings page, because
+   first-run setup borrows the Dictation key and Models cards and must always show them. */
+.page[data-page='settings'] .card.tab-off { display: none; }
+/* Narrow window: the five tabs need the toolbar's width; the sidebar already says "Settings". */
+@media (max-width: 760px) {
+  .page[data-page='settings'] .toolbar h1 { display: none; }
+  .page[data-page='settings'] .toolbar { justify-content: flex-end; }
+}
+.card.highlight {box-shadow: 0 0 0 2px var(--accent); transition: box-shadow 0.3s; }
 .title-input { font: inherit; font-weight: 600; padding: 3px 6px; border-radius: 6px; border: 1px solid var(--accent); background: var(--win); color: var(--text); width: 100%; }
 .player { display: flex; align-items: center; gap: 10px; }
 .player .play { width: 36px; height: 36px; border-radius: 50%; justify-content: center; padding: 0; font-size: 14px; }
