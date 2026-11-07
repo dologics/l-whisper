@@ -45,7 +45,7 @@ It is **installed** at `/Applications/L - Whisper.app` (opens at login) and **sh
 ## Essential commands
 ```bash
 npm start                    # build + dev run (project models/ + bin/); quit the installed app first
-npm test                     # unit tests (40), run on the .ts files via tsx
+npm test                     # unit tests (96), run on the .ts files via tsx
 npm run typecheck            # TypeScript check of everything (main, windows, tests, scripts)
 npm run lint                 # ESLint;  npm run format = Prettier
 npm run build                # TypeScript → build/ (start/install-app do this for you)

@@ -31,7 +31,7 @@ Tech stack: Electron + Node.js (TypeScript), with whisper.cpp as the local trans
 
 ## 6. Meeting recording (audio only)
 - Menu: Start / Stop Meeting Recording — records your mic + everything the Mac plays (Meet/Zoom in Chrome, WhatsApp…).
-- Saves while recording to `~/Documents/L - Whisper Library/` (crash-safe), ~29 MB per hour, both voices balanced in both ears.
+- Saves while recording to `~/Documents/L - Whisper Library/` (crash-safe), ~58 MB per hour (a hidden 2nd track keeps the two sides apart for speaker labels), both voices balanced in both ears.
 - Uses the mic your call uses and follows device switches. No automatic transcription — transcribe it in the Library.
 
 ## 7. Library (meetings + transcribed files) — task 25, replaced the Meetings page
@@ -64,9 +64,9 @@ Tech stack: Electron + Node.js (TypeScript), with whisper.cpp as the local trans
 
 ## Ideas (not decided)
 - Screen + audio (video) meeting recording — same recorder with video on.
-- Speaker labels: You / Others, then Speaker 1, 2, 3.
+- Tell individual people apart on the other side of a call (Speaker 2, 3, …).
+- Keep both voices when two people talk at the same moment (re-transcribe those gaps from each side).
 - Keep history across restarts (with a "Clear history" button).
-- Subtitle export (.srt / .vtt).
 - Custom vocabulary for names and jargon.
 - Cleanup of filler words.
 - More languages in the language menu (e.g. Urdu).

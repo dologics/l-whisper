@@ -19,15 +19,17 @@ Built by Mohsin Shoaib at DoLogics.
 📝 Note: the exact message macOS showed, and whether Open Anyway worked.
 
 ## 2. First-run setup (≈ 5 min)
-1. **Permissions:** click Allow for Microphone, Input Monitoring and Accessibility, switch L - Whisper on in System Settings, come back — each should show ✓.
-2. **Dictation key:** keep **fn**, or choose two keys (e.g. ⌃ Control + ⌥ Option). Press **Test** and hold the key — the lamp should turn green.
-3. **Model:** download the **Recommended** one. 📝 How long did it take?
-4. **Try it:** click in the box, hold your key, say a sentence, let go → your words appear. Click **Finish**.
+1. **Welcome:** type your name (optional) — it labels you in meeting transcripts.
+2. **Permissions:** click Allow for Microphone, Input Monitoring and Accessibility, switch L - Whisper on in System Settings, come back — each should show ✓.
+3. **Dictation key:** keep **fn**, or choose two keys (e.g. ⌃ Control + ⌥ Option). Press **Test** and hold the key — the lamp should turn green.
+4. **Model:** download the **Recommended** one. 📝 How long did it take?
+5. **Try it:** click in the box, hold your key, say a sentence, let go → your words appear. Click **Finish**.
 
 ## 3. Try the features
 - **Dictation:** in Notes, Mail or a browser, hold your key, speak, let go. Double-tap the key for hands-free, tap again to stop. 📝 How long until the text appears?
 - **Transcribe a file:** drag an audio/video file (voice memo, video) into the window. 📝 File length and how long it took.
-- **Meeting recording** (optional): menu bar waveform icon → Start Meeting Recording during a call (Zoom, Meet, WhatsApp…) → Stop → open **Library** in the app → play it → Transcribe.
+- **Meeting recording** (optional): menu bar waveform icon → Start Meeting Recording during a call (Zoom, Meet, WhatsApp…) → Stop → open **Library** in the app → play it → Transcribe. The transcript should show **your name** for you and **Speaker 2** for the other side. 📝 Did it get the speakers right? Which mic and output did you use (headphones, AirPods, MacBook speakers + mic)? If you can, try one call on **MacBook speakers** and, if you speak Urdu, one with **Translate to English**.
+- **Library tabs:** open an item → Transcript · Summary · Files. **Settings** has tabs; **About** is in the sidebar.
 - **AI summary** (optional, needs Claude Code or Codex signed in with your subscription): Settings → AI summary → choose it → Test → in the Library open a transcribed item → Summarize. Tell us if it couldn't find the tool. macOS asks once to allow recording other apps' audio.
 
 ## 4. Send back

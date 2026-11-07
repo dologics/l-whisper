@@ -53,9 +53,18 @@ Ask only for what you can't test yourself (holding Fn, real speech, native Save/
 2. If architecture, data locations or decisions changed → update `docs/ARCHITECTURE.md`. New trap found → add it to `docs/GOTCHAS.md`. Feature added → `FEATURES.md`.
 3. User-visible change → one plain-words line under `## Unreleased` in `CHANGELOG.md`. (Making a version to share = the **`release-app`** skill.)
 4. Update CLAUDE.md **"Where we are"** if the status moved (new version, task on hold/started, open questions).
-5. Commit **and push** (the user wants every finished task on GitHub):
+5. **Public docs check (always — the project is open source, its docs must match the app).** Search the
+   public files for anything this change made stale or should mention, e.g.
+   `grep -rn -i "<feature words>" README.md FEATURES.md CHANGELOG.md docs/ CONTRIBUTING.md CLAUDE.md .claude/skills/`:
+   - `README.md` — feature list, "Features" sections, sizes/numbers, Roadmap (remove ideas that now exist), screenshots in `docs/images/` that show an old layout.
+   - `FEATURES.md` (incl. "Ideas"), `docs/ARCHITECTURE.md` (file map, flows, §6 decisions), `docs/GOTCHAS.md`.
+   - `docs/beta-tester-checklist.md` — can testers try the new thing?
+   - `CLAUDE.md` (commands, test count, "Where we are") and the skills' own steps.
+   - Code comments that name a moved/renamed screen or setting.
+   **Tell the user what's stale (a short table) and ask before changing it** — then fix it in the same task.
+6. Commit **locally** and ask the user to test. **Push only after they approve** (user rule, 2026-11-07):
    ```bash
    git add -A && git commit -m "<task number>: <short summary>"
-   git push   # pushes dev to GitHub → starts the CI checks (gh run list --limit 1 → must be green)
+   git push   # after the user's OK → dev on GitHub → CI checks (gh run list --limit 1 → must be green)
    ```
-   (Models, samples, node_modules, dist and bin are git-ignored.) Report the commit hash and that it's pushed.
+   (Models, samples, node_modules, dist and bin are git-ignored.) Report the commit hash, and after the push that CI is green; close the task's GitHub issue with a link to the commit.

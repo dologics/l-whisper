@@ -36,7 +36,7 @@ small menu bar app that runs **entirely on your Mac**:
 
 - 🎙️ **Dictation anywhere** — hold a key, speak, and the text appears where your cursor is.
 - 📄 **File transcription** — drop an audio or video file, get a timestamped transcript.
-- 🧑‍🤝‍🧑 **Meeting recording** — your mic **and** the other people (Zoom, Meet in Chrome, WhatsApp, anything).
+- 🧑‍🤝‍🧑 **Meeting recording** — your mic **and** the other people (Zoom, Meet in Chrome, WhatsApp, anything), with **who said what**.
 - 📚 **Library** — all meetings and transcripts in one place, with a player and txt / srt / vtt export.
 - ✨ **AI summary (optional)** — summarize a transcript with the Claude Code or Codex you already use. No API key.
 
@@ -57,18 +57,27 @@ Everything it needs (whisper.cpp, FFmpeg) is **bundled** — no Homebrew, no Pyt
 
 ### 3. Meeting recording (audio only)
 - Menu bar → **Start Meeting Recording**. Records your microphone plus everything your Mac plays.
-- Saved while recording (crash-safe), about 29 MB per hour, in `~/Documents/L - Whisper Library/`.
+- Saved while recording (crash-safe), about 58 MB per hour, in `~/Documents/L - Whisper Library/`.
+- **Speaker labels:** the transcript shows who spoke — your microphone as your name (Settings → General,
+  or "Speaker 1"), the other side of the call as "Speaker 2". Works with headphones, hands-free or the
+  MacBook mic. The meeting's `.txt` is one paragraph per turn, without timestamps; `.srt` / `.vtt` keep them.
+  When two people talk over each other at the same moment, only one of them may be written down.
 
 ### 4. Library
 - Meetings and transcribed files in one list, newest first.
 - Built-in player; click a transcript line to jump there.
 - Transcribe in **Auto / English / Urdu**, optionally translate to English → `.txt`, `.srt`, `.vtt`.
+- Each item has **Transcript · Summary · Files** tabs; Files shows the saved files as they are, with Copy.
 - Rename, delete (to Trash), show in Finder.
 
 ### 5. AI summary (optional, off by default)
 - Settings → AI summary → choose **Claude Code** or **Codex** (whichever you have installed and signed in to).
 - Click **Summarize** on a Library item → Summary, Key points, Action items, Open questions →
   saved as `<name>.summary.md` next to the transcript.
+
+### Settings
+Tabs for **General** (your name, language, sounds, open at login) · **Dictation** · **Models** · **AI summary** ·
+**Permissions**. Version, licence and credits are on the **About** page in the sidebar.
 
 ### Models
 Choose a Whisper model in the first-run setup or Settings → Models: Tiny, Base, Small, Medium,
@@ -154,7 +163,8 @@ test/           unit tests
 
 Ideas we'd like to explore — contributions welcome:
 
-- Speaker labels (You / Others, then Speaker 1, 2, 3)
+- Tell individual people apart on the other side of a call (Speaker 2, 3, …)
+- Keep both voices when two people talk at the same moment
 - Custom vocabulary for names and jargon
 - Keep dictation history across restarts (opt-in)
 - More languages in the language menu

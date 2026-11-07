@@ -35,7 +35,7 @@ L - Whisper.app (Electron main process, src/main/main.ts → WhisperApp in app.t
 | `src/main/app.ts` | `WhisperApp` — the app's wiring: tray menu, main window, state pushed to the window, settings changes, dictation/meeting handlers, startup + dev test modes, quit |
 | `src/main/ipc.ts` | `registerIpc()` — every request the window can make (`ipcMain.handle`) |
 | `src/main/system-settings.ts` | `openSystemSettings(kind)` — opens the Privacy pane for a permission, or Keyboard |
-| `src/main/about.ts` | Credits in one place ("© DoLogics · MIT License", repo link, "Built by Mohsin Shoaib", version): macOS About window (tray → About L - Whisper) + Settings → About |
+| `src/main/about.ts` | Credits in one place ("© DoLogics · MIT License", repo link, "Built by Mohsin Shoaib", version): macOS About window (tray → About L - Whisper) + the About page in the sidebar |
 | `src/main/dev-overrides.ts` | Imported first by main.ts: `WHISPER_USER_DATA` (separate data folder incl. the installed app's models — fresh-user tests), `WHISPER_DOCUMENTS_DIR` (stand-in ~/Documents → test Library, never the user's) |
 | `src/main/paths.ts` | Where models, Swift helpers and the Library live (dev vs packaged); `LIBRARY_DIR` + `OLD_RECORDINGS_DIR` |
 | `src/main/library-protocol.ts` | `library://audio/<id>` for the player, with byte ranges (seeking): a meeting's .m4a, or a file item's original — only the exact path in its `item.json` |
@@ -252,7 +252,7 @@ Finish → onboarded = true · Settings → "Run setup again" → onboarded = fa
 | Meeting: **process tap** for system audio (not BlackHole, not Screen Recording) | One permission, any app, any output device (task 14) |
 | Meeting: record **the mic the call uses**, follow switches | User switches between Mac mic, headset, hands-free; default input is often the wrong one |
 | Meeting: **mono, both voices levelled** (not L/R split) for listening | User's choice — normal listening |
-| Meeting: **hidden 2nd track** (raw stereo, L = mic, R = system) + **word-level** speaker assignment (DTW word times × each side's loudness) | Task 27 (user approved): labels by source — mic = your name or "Speaker 1", system = "Speaker 2". `whisper -di` was tried first and failed on a real call (one label per segment; segments held both people). Per-turn transcription was tried and rejected (invented words on short clips, 3× slower). Cost: +~29 MB/h, ~+20 % transcription time |
+| Meeting: **hidden 2nd track** (raw stereo, L = mic, R = system) + **word-level** speaker assignment (DTW word times × each side's loudness) | Task 27 (user approved): labels by source — mic = your name or "Speaker 1", system = "Speaker 2". `whisper -di` was tried first and failed on a real call (one label per segment; segments held both people). Per-turn transcription was tried and rejected (invented words on short clips, 3× slower). Cost: +~29 MB/h (meetings ~58 MB/h in all), ~+20 % transcription time |
 | Meeting `.txt` **without timestamps**, one paragraph per speaker turn; srt/vtt/json keep timestamps; dropped files keep timestamps everywhere | User's choice (task 27): the timed files exist for times; "Me/Other" rejected — confusing when shared |
 | Meeting: mic side `highpass + afftdn` denoise, `dynaudnorm t=0.002` | Without them the leveller boosted mic hiss/room noise (user heard constant noise; Whisper invented words) |
 | Meeting: fragmented .m4a while recording | Crash/power loss keeps everything up to the last ~5 s |
@@ -265,7 +265,7 @@ Finish → onboarded = true · Settings → "Run setup again" → onboarded = fa
 | Waveform tray icon (not a mic) | Mic icon was confused with macOS's mic-in-use indicator |
 | Self-signed cert "Whisper Desktop Local" | Stable signature → macOS keeps permissions across updates |
 | **Two DMGs** (arm64 + x64), not one universal; app ID `com.dologics.lwhisper`; version 1.0.0; macOS 14.2+ | User's choice (task 22): friends on both chip types, each downloads only their own. No Apple Developer ID → one-time "Open Anyway" (explained in the DMG). Intel recommends the Small model (no GPU acceleration) |
-| Credits: copyright **DoLogics** (MIT, `LICENSE`), one quiet "Built by Mohsin Shoaib" line | User's request (task 22, changed in task 23 for open source): About window, bottom of Settings, Info.plist copyright "© 2026 DoLogics · MIT License", README footer. Third-party licences ship in `Contents/Resources/licenses/` (`THIRD_PARTY_NOTICES.md` + `licenses/`) |
+| Credits: copyright **DoLogics** (MIT, `LICENSE`), one quiet "Built by Mohsin Shoaib" line | User's request (task 22, changed in task 23 for open source): About window, About page in the sidebar (task 31), Info.plist copyright "© 2026 DoLogics · MIT License", README footer. Third-party licences ship in `Contents/Resources/licenses/` (`THIRD_PARTY_NOTICES.md` + `licenses/`) |
 | Copy/Save keep **timestamps** (txt `[mm:ss]`); Save offers txt / srt / vtt | User's request (task 15) — formats in `src/main/transcript-formats.ts` |
 
 ## 7. macOS permissions
