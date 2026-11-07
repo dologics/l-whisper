@@ -72,8 +72,8 @@ Everything it needs (whisper.cpp, FFmpeg) is **bundled** — no Homebrew, no Pyt
 
 ### 5. AI summary (optional, off by default)
 - Settings → AI summary → choose **Claude Code** or **Codex** (whichever you have installed and signed in to).
-- Click **Summarize** on a Library item → Summary, Key points, Action items, Open questions →
-  saved as `<name>.summary.md` next to the transcript.
+- Click **Summarize** on a Library item → a one-page summary in meeting-minutes style: Overview, Decisions,
+  Action items (with an owner), Discussion, Open questions → saved as `<name>.summary.md` next to the transcript.
 
 ### Settings
 Tabs for **General** (your name, language, sounds, open at login) · **Dictation** · **Models** · **AI summary** ·

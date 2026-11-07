@@ -44,7 +44,7 @@ Tech stack: Electron + Node.js (TypeScript), with whisper.cpp as the local trans
 
 ## 8. AI summary (task 26)
 - Settings → **AI summary**: Off (default) / **Claude Code** (Claude subscription) / **Codex** (ChatGPT subscription) — uses the tool installed and signed in on this Mac, no API key. Status, Choose… (pick the program), Test.
-- Library item → **Summarize**: simple English, third person — Summary, Key points, **Action items** ("X needs to…"), Open questions. Saved as `<name>.summary.md` in the item's folder; Copy, Regenerate; note when the transcript is newer.
+- Library item → **Summarize**: simple English, third person, meeting-minutes style (task 32) — Overview, Decisions, **Action items** ("**Owner** — task"), Discussion, Open questions; about one page, no nested bullets. Saved as `<name>.summary.md` in the item's folder; Copy, Regenerate; note when the transcript is newer.
 - Only on click, only the transcript text (never audio). Not set up → the button opens Settings.
 
 ## Built beyond the original list
