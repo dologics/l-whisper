@@ -189,7 +189,7 @@ export interface AppState {
   hotkeyLabel: string;
   /** Fn is the key but macOS also uses it (System Settings → Keyboard → "Press 🌐 key to") */
   fnKeyConflict: boolean;
-  /** version + credits (Settings → About) */
+  /** version + credits (About page) */
   about: { version: string; company: string; builtBy: string; license: string; repoUrl: string };
   /** first-run setup: show it? which page? */
   setup: { needed: boolean; step: number };
@@ -308,6 +308,8 @@ export interface WhisperAppApi {
   setSounds(on: boolean): Promise<void>;
   /** save the user's name (cleaned in main; '' clears it) */
   setUserName(name: string): Promise<void>;
+  /** About page: open the project's GitHub page in the browser */
+  openRepo(): Promise<void>;
   copyText(text: string): Promise<void>;
   /** open System Settings at a permission's pane, or at Keyboard ('keyboard') */
   openPrivacySettings(kind: PermissionKind | 'keyboard'): Promise<void>;

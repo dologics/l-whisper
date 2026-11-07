@@ -28,5 +28,7 @@ for (const file of STATIC_FILES) {
   fs.mkdirSync(path.dirname(path.join(out, file)), { recursive: true });
   fs.copyFileSync(path.join(root, 'src', file), path.join(out, file));
 }
+// the app icon for the About page (task 31)
+fs.copyFileSync(path.join(root, 'assets', 'icon-preview.png'), path.join(out, 'renderer', 'app-icon.png'));
 
 console.log(`build/ ready in ${((Date.now() - t0) / 1000).toFixed(1)} s`);

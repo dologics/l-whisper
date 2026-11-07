@@ -5,6 +5,7 @@ Versions: MAJOR.MINOR.PATCH — see the `release-app` skill for when each number
 
 ## Unreleased
 
+- New **About** page in the sidebar (app icon, version, licence, GitHub link, credits); the credits footer is gone from Settings.
 - Settings is split into tabs: General · Dictation · Models · AI summary · Permissions. Links like "Settings → AI summary" open the right tab (#3).
 - New optional **Your name** in Settings → General and on the first-run Welcome page; it will label you in meeting transcripts (#2).
 - Library items show **Transcript · Summary · Files** tabs instead of stacked cards; the Files tab shows the saved TXT, SRT, VTT, JSON and summary files as they are, with Copy and Show in Finder (#4).

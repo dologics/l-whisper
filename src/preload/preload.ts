@@ -24,6 +24,7 @@ const api = {
   setOpenAtLogin: (on: boolean) => ipcRenderer.invoke('app:set-open-at-login', on),
   setSounds: (on: boolean) => ipcRenderer.invoke('app:set-sounds', on),
   setUserName: (name: string) => ipcRenderer.invoke('app:set-user-name', name),
+  openRepo: () => ipcRenderer.invoke('app:open-repo'),
   copyText: (text: string) => ipcRenderer.invoke('app:copy-text', text),
   openPrivacySettings: (kind: PermissionKind | 'keyboard') => ipcRenderer.invoke('app:open-privacy', kind),
 

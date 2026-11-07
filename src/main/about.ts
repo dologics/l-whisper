@@ -1,6 +1,6 @@
 // Who made L - Whisper — one place for the credits shown in the app:
 //   - the macOS "About L - Whisper" window (tray menu)
-//   - the About section at the bottom of Settings
+//   - the About page in the main window's sidebar (task 31)
 // (Finder → Get Info shows the same copyright line, from package.json "build.copyright".)
 //
 // Open-source credit style (task 23): the company holds the copyright (LICENSE file, MIT),

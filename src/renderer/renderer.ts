@@ -24,6 +24,7 @@ function showPage(name: string): void {
   else audio.pause(); // don't keep playing on another page
 }
 $$('.nav a').forEach((a) => a.addEventListener('click', () => showPage(a.dataset.page ?? '')));
+$('#aboutRepo').addEventListener('click', () => void api.openRepo()); // About page → GitHub in the browser
 
 // ================= Settings tabs =================
 // Each Settings card has data-tab="general|dictation|models|ai|permissions"; the tab bar in the
@@ -276,7 +277,7 @@ function render(state: AppState): void {
   $$('.hotkey-label').forEach((el) => (el.textContent = state.hotkeyLabel));
   renderHotkey(state);
   renderSetup(state);
-  $('#aboutVersion').textContent = `version ${state.about.version}`;
+  $('#aboutVersion').textContent = `Version ${state.about.version}`;
   $('#aboutCompany').textContent = state.about.company;
   $('#aboutLicense').textContent = state.about.license;
   $('#aboutRepo').textContent = state.about.repoUrl;

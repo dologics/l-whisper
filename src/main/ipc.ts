@@ -4,6 +4,7 @@ import { app, clipboard, dialog, ipcMain, shell } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { PermissionKind, SavedFileKind, Segment, TranscribeOptions } from '../shared/types';
+import { REPO_URL } from './about';
 import type { WhisperApp } from './app';
 import { SUPPORTED, TranscriptionCancelled } from './file-transcriber';
 import { openSystemSettings } from './system-settings';
@@ -20,6 +21,8 @@ export function registerIpc(whisper: WhisperApp): void {
   ipcMain.handle('app:set-language', (_e, code: string) => whisper.setLanguage(code));
   ipcMain.handle('app:set-open-at-login', (_e, on: unknown) => whisper.setOpenAtLogin(Boolean(on)));
   ipcMain.handle('app:set-sounds', (_e, on: unknown) => whisper.setSounds(Boolean(on)));
+  // About page: the project page on GitHub — a fixed address, the window can't pass its own
+  ipcMain.handle('app:open-repo', () => shell.openExternal(`https://${REPO_URL}`));
   ipcMain.handle('app:set-user-name', (_e, name: unknown) => whisper.setUserName(name)); // cleaned there
   ipcMain.handle('app:copy-text', (_e, text: unknown) => clipboard.writeText(String(text)));
   ipcMain.handle('app:open-privacy', (_e, kind: PermissionKind | 'keyboard') => openSystemSettings(kind));

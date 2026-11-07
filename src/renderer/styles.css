@@ -312,3 +312,11 @@ select { font: inherit; padding: 3px 6px; border-radius: 6px; border: 1px solid 
 
 /* ---------- Settings → About (small, at the bottom) ---------- */
 .about { text-align: center; font-size: 11.5px; line-height: 1.6; padding: 4px 0 2px; }
+/* About page (task 31): everything centred in the middle of the page */
+.about-page { align-items: center; justify-content: center; }
+.about-page .about { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 13px; max-width: 420px; padding: 0 0 40px; }
+.about-icon { width: 96px; height: 96px; margin-bottom: 6px; }
+.about-page h2 { margin: 0; font-size: 22px; font-weight: 600; }
+.about-lead { margin: 6px 0 10px; color: var(--muted); }
+.about-lines { display: flex; flex-direction: column; gap: 3px; }
+.about-credits { margin: 14px 0 0; line-height: 1.5; text-wrap: balance; }

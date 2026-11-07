@@ -50,7 +50,7 @@ Tech stack: Electron + Node.js (TypeScript), with whisper.cpp as the local trans
 ## Built beyond the original list
 - Hold the dictation key = push-to-talk; double-tap = hands-free (tap to stop).
 - **Shareable**: two DMGs — Apple Silicon and Intel — with a how-to-open note (no Apple Developer ID; one-time "Open Anyway"). Needs macOS 14.2+ (task 22).
-- Credits: "© DoLogics · MIT License" + "Built by Mohsin Shoaib" — About window (tray menu), bottom of Settings, Finder Get Info; third-party licences inside the app (task 23).
+- Credits: "© DoLogics · MIT License" + "Built by Mohsin Shoaib" — About window (tray menu), the **About page** in the sidebar (task 31; was the bottom of Settings), Finder Get Info; third-party licences inside the app (task 23).
 - **Speaker labels in meetings** (task 27): mic = your name (or "Speaker 1"), system audio = "Speaker 2". Recordings keep a hidden 2nd track (raw: L mic / R system); each word goes to the side that was talking when it was said (whisper DTW word times), so turns are split correctly. Meeting .txt has no timestamps (paragraph per turn); srt `Name: …`, vtt `<v Name>`, json `speaker`. The AI summary is told who the names are. New recordings only.
 - **Library item tabs** (task 30): Transcript · Summary · Files (view the saved TXT / SRT / VTT / JSON / summary, Copy, Show in Finder). Tabs appear once something is transcribed.
 - **Your name** (task 28): optional, Settings → General and the setup Welcome page; stored only in settings.json; will label the mic side of meeting transcripts (task 27).
