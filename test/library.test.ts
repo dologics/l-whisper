@@ -157,6 +157,31 @@ test('transcribe a meeting writes txt, srt, vtt and json next to the audio', asy
   assert.strictEqual(m.segments[0].text, 'Assalam o alaikum.');
 });
 
+test('get lists the saved files; readSavedFile returns one, as it is on disk', async () => {
+  const { dir, lib, makeMeeting } = setup();
+  makeMeeting('Meeting F');
+  assert.deepStrictEqual((await lib.get('Meeting F')).files, []); // not transcribed yet
+  await lib.transcribe('Meeting F', { language: 'ur', translate: false }, () => {});
+  lib.saveSummary('Meeting F', '## Summary\n- point', 'claude');
+  const kinds = (await lib.get('Meeting F')).files.map((f) => f.kind);
+  assert.deepStrictEqual(kinds, ['txt', 'srt', 'vtt', 'json', 'summary']);
+  const srt = lib.readSavedFile('Meeting F', 'srt');
+  assert.strictEqual(srt.name, 'Meeting F.srt');
+  assert.strictEqual(srt.path, path.join(dir, 'Meeting F', 'Meeting F.srt'));
+  assert.strictEqual(srt.text, fs.readFileSync(srt.path, 'utf8'));
+  assert.strictEqual(lib.readSavedFile('Meeting F', 'summary').name, 'Meeting F.summary.md');
+});
+
+test('readSavedFile only reads the fixed kinds, never other paths', async () => {
+  const { lib, makeMeeting } = setup();
+  makeMeeting('Meeting G');
+  await lib.transcribe('Meeting G', { language: 'en', translate: false }, () => {});
+  assert.throws(() => lib.readSavedFile('Meeting G', 'm4a' as never), /Unknown file/);
+  assert.throws(() => lib.readSavedFile('Meeting G', '../../etc/passwd' as never), /Unknown file/);
+  assert.throws(() => lib.readSavedFile('Meeting G', 'summary'), /not saved/); // no summary yet
+  assert.throws(() => lib.readSavedFile('../outside', 'txt')); // ids stay inside the library
+});
+
 // ---------- items made from dropped files ----------
 
 test('createFromFile saves transcripts + item.json, never copies or moves the original', async () => {

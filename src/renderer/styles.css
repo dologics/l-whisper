@@ -243,6 +243,19 @@ select { font: inherit; padding: 3px 6px; border-radius: 6px; border: 1px solid 
 .card-head h3 { margin: 0; }
 .transcript-card { display: flex; flex-direction: column; min-height: 200px; }
 .transcript-card .transcript { max-height: 420px; }
+/* Library item tabs (task 30): Transcript / Summary / Files, one card at a time */
+.item-tabs { align-self: flex-start; }
+.item-tabs[hidden] { display: none; }
+.item-tabs button:disabled { opacity: 0.4; }
+.page[data-page='library'] .card.itab-off { display: none; }
+.files-card { display: flex; flex-direction: column; min-height: 200px; }
+.files-card .card-head .filter { background: var(--chip); }
+.files-card .card-head .btn, .files-card .filter button { white-space: nowrap; }
+.file-view {
+  margin: 0; flex: 1; max-height: 420px; min-height: 160px; overflow: auto; border: 1px solid var(--line); border-radius: 10px;
+  padding: 12px 14px; font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap;
+  overflow-wrap: anywhere; user-select: text; -webkit-user-select: text; color: var(--text);
+}
 .transcript p.line { cursor: pointer; border-radius: 6px; padding: 2px 6px; margin: 0 -6px 6px; }
 .transcript p.line:hover { background: var(--chip); }
 .transcript p.line.current { background: var(--accent-soft); }

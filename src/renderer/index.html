@@ -192,7 +192,13 @@
                 <p class="error left" id="mError" hidden></p>
               </div>
 
-              <div class="card summary-card" id="mSummaryCard">
+              <!-- Transcript / Summary / Files: one card at a time (task 30); hidden until there is a transcript -->
+              <div class="filter item-tabs" id="mTabs" hidden>
+                <button class="on" data-itab="transcript">Transcript</button>
+                <button data-itab="summary">Summary</button>
+                <button data-itab="files">Files</button>
+              </div>
+              <div class="card summary-card" id="mSummaryCard" data-itab="summary">
                 <div class="card-head">
                   <h3>AI summary</h3>
                   <span class="meta" id="mSummaryMeta"></span>
@@ -215,7 +221,7 @@
                 <div class="summary" id="mSummary" hidden></div>
               </div>
 
-              <div class="card transcript-card" id="mTranscriptCard" hidden>
+              <div class="card transcript-card" id="mTranscriptCard" data-itab="transcript">
                 <div class="card-head">
                   <h3>Transcript</h3>
                   <span class="meta" id="mTranscriptMeta"></span>
@@ -223,7 +229,17 @@
                   <button class="btn" id="mCopy">Copy</button>
                 </div>
                 <div class="transcript" id="mTranscript"></div>
-                <p class="muted small">Saved as .txt, .srt and .vtt in this item's folder (Show in Finder). Click a line to play from there.</p>
+                <p class="muted small">Click a line to play from there.</p>
+              </div>
+              <div class="card files-card" id="mFilesCard" data-itab="files">
+                <div class="card-head">
+                  <div class="filter" id="mFileKinds"></div>
+                  <span class="grow"></span>
+                  <button class="btn" id="mFileCopy">Copy</button>
+                  <button class="btn" id="mFileReveal">Show in Finder</button>
+                </div>
+                <pre class="file-view" id="mFileView"></pre>
+                <p class="muted small"><span id="mFileMeta"></span> — saved in this item's folder, shown as it is.</p>
               </div>
             </div>
           </div>

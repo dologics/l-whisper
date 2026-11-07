@@ -257,6 +257,25 @@ export interface LibraryItemDetail extends LibraryEntry {
   folder: string;
   segments: Segment[];
   summary: SummaryInfo | null;
+  /** the item's saved files that exist, in a fixed order (Files tab, task 30) */
+  files: SavedFileInfo[];
+}
+
+/** Files saved in an item's folder that the Files tab can show. */
+export type SavedFileKind = 'txt' | 'srt' | 'vtt' | 'json' | 'summary';
+
+export interface SavedFileInfo {
+  kind: SavedFileKind;
+  /** file name, e.g. "Meeting 2026-11-05 10-30.srt" */
+  name: string;
+  /** bytes */
+  size: number;
+}
+
+/** One saved file, read for the Files tab. */
+export interface SavedFile extends SavedFileInfo {
+  path: string;
+  text: string;
 }
 
 export interface LibraryProgress extends Progress {
@@ -326,6 +345,8 @@ export interface WhisperAppApi {
   library: {
     list(): Promise<LibraryListItem[]>;
     get(id: string): Promise<LibraryItemDetail>;
+    /** one of the item's saved files, as it is on disk (Files tab) */
+    readFile(id: string, kind: SavedFileKind): Promise<SavedFile>;
     rename(id: string, title: string): Promise<Outcome<{ id: string }>>;
     /** asks for confirmation first; a file item's original is never touched */
     delete(id: string): Promise<Outcome>;

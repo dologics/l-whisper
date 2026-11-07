@@ -723,7 +723,6 @@ audio.addEventListener('error', () => {
 function renderItemTranscript(m: LibraryItemDetail): void {
   renderSummary(m.summary, m.segments.length > 0);
   itemSegments = m.segments || [];
-  $('#mTranscriptCard').hidden = itemSegments.length === 0;
   $('#mTranscribe').textContent = itemSegments.length ? 'Transcribe again' : 'Transcribe';
   $('#mTranscriptMeta').textContent = m.transcript ? transcriptLabel(m.transcript) : '';
   const box = $('#mTranscript');
@@ -744,7 +743,92 @@ function renderItemTranscript(m: LibraryItemDetail): void {
       return p;
     })
   );
+  renderItemTabs(m);
 }
+
+// ----- item tabs: Transcript / Summary / Files (task 30) -----
+type ItemTab = 'transcript' | 'summary' | 'files';
+let itemTab: ItemTab = 'transcript'; // tab on screen
+let tabsItemId: string | null = null; // the item the tabs belong to (a new item starts on Transcript)
+let itemFiles: SavedFileInfo[] = []; // saved files of the open item
+let fileKind: SavedFileKind = 'txt'; // file shown in the Files tab
+let openFile: SavedFile | null = null; // for Copy / Show in Finder
+const FILE_LABELS: Record<SavedFileKind, string> = {
+  txt: 'TXT',
+  srt: 'SRT',
+  vtt: 'VTT',
+  json: 'JSON',
+  summary: 'Summary', // <name>.summary.md
+};
+
+/** Tabs appear once there is something to show (a transcript, a summary or saved files). */
+function renderItemTabs(m: LibraryItemDetail): void {
+  if (m.id !== tabsItemId) {
+    tabsItemId = m.id;
+    itemTab = 'transcript';
+    fileKind = 'txt';
+  }
+  const hasAnything = m.segments.length > 0 || m.summary !== null || m.files.length > 0;
+  $('#mTabs').hidden = !hasAnything;
+  $<HTMLButtonElement>('#mTabs [data-itab="files"]').disabled = m.files.length === 0;
+  renderFileKinds(m.files);
+  if (itemTab === 'files' && m.files.length === 0) itemTab = 'transcript';
+  showItemTab(itemTab, hasAnything);
+}
+
+function showItemTab(tab: ItemTab, visible = !$('#mTabs').hidden): void {
+  itemTab = tab;
+  $$('#mTabs button').forEach((b) => b.classList.toggle('on', b.dataset.itab === tab));
+  // nothing to show yet (not transcribed) → all three cards hidden, only the Transcribe card
+  $$('.card[data-itab]').forEach((c) => c.classList.toggle('itab-off', !visible || c.dataset.itab !== tab));
+  if (visible && tab === 'files') void showSavedFile(fileKind);
+}
+$$<HTMLButtonElement>('#mTabs button').forEach((b) =>
+  b.addEventListener('click', () => showItemTab(b.dataset.itab as ItemTab))
+);
+
+/** The TXT / SRT / VTT / JSON / Summary chips — only the files that exist. */
+function renderFileKinds(files: SavedFileInfo[]): void {
+  itemFiles = files;
+  if (files.length && !files.some((f) => f.kind === fileKind)) fileKind = files[0].kind;
+  $('#mFileKinds').replaceChildren(
+    ...files.map((f) => {
+      const b = document.createElement('button');
+      b.textContent = FILE_LABELS[f.kind];
+      b.classList.toggle('on', f.kind === fileKind);
+      b.addEventListener('click', () => void showSavedFile(f.kind));
+      return b;
+    })
+  );
+}
+
+/** Show one saved file as it is on disk (read-only; text only, never HTML). */
+async function showSavedFile(kind: SavedFileKind): Promise<void> {
+  const id = itemId;
+  if (id === null || !itemFiles.some((f) => f.kind === kind)) return;
+  fileKind = kind;
+  $$('#mFileKinds button').forEach((b, i) => b.classList.toggle('on', itemFiles[i]?.kind === kind));
+  try {
+    const file = await api.library.readFile(id, kind);
+    if (id !== itemId || kind !== fileKind) return; // moved on meanwhile
+    openFile = file;
+    $('#mFileView').textContent = file.text;
+    $('#mFileView').scrollTop = 0;
+    $('#mFileMeta').textContent = `${file.name} · ${formatSize(file.size)}`;
+  } catch (err) {
+    openFile = null;
+    $('#mFileView').textContent = `Couldn't read this file: ${err instanceof Error ? err.message : String(err)}`;
+    $('#mFileMeta').textContent = '';
+  }
+  $<HTMLButtonElement>('#mFileCopy').disabled = openFile === null;
+  $<HTMLButtonElement>('#mFileReveal').disabled = openFile === null;
+}
+$('#mFileCopy').addEventListener('click', async () => {
+  if (!openFile) return;
+  await api.copyText(openFile.text);
+  flash($('#mFileCopy'), 'Copied');
+});
+$('#mFileReveal').addEventListener('click', () => openFile && api.revealFile(openFile.path));
 
 // ----- player -----
 let seeking = false;
@@ -992,7 +1076,10 @@ async function summarizeOpenItem(): Promise<void> {
 /** Reload just the summary part of the open item. */
 async function openItemSummary(id: string): Promise<void> {
   const m = await api.library.get(id);
-  if (m.id === itemId) renderSummary(m.summary, m.segments.length > 0);
+  if (m.id !== itemId) return;
+  renderSummary(m.summary, m.segments.length > 0);
+  renderFileKinds(m.files); // a new .summary.md shows in the Files tab
+  $<HTMLButtonElement>('#mTabs [data-itab="files"]').disabled = m.files.length === 0;
 }
 
 $('#mSummarize').addEventListener('click', () => void summarizeOpenItem());

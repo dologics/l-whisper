@@ -3,7 +3,7 @@
 import { app, clipboard, dialog, ipcMain, shell } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
-import type { PermissionKind, Segment, TranscribeOptions } from '../shared/types';
+import type { PermissionKind, SavedFileKind, Segment, TranscribeOptions } from '../shared/types';
 import type { WhisperApp } from './app';
 import { SUPPORTED, TranscriptionCancelled } from './file-transcriber';
 import { openSystemSettings } from './system-settings';
@@ -91,6 +91,8 @@ export function registerIpc(whisper: WhisperApp): void {
   // ----- Library page (meetings + transcribed files) -----
   ipcMain.handle('library:list', () => whisper.library.list());
   ipcMain.handle('library:get', (_e, id: string) => whisper.library.get(id));
+  // Files tab: only the fixed kinds (txt/srt/vtt/json/summary) of that item — checked in Library
+  ipcMain.handle('library:read-file', (_e, id: string, kind: SavedFileKind) => whisper.library.readSavedFile(id, kind));
   ipcMain.handle('library:reveal', (_e, id: string) => shell.openPath(whisper.library.folderOf(id)));
   ipcMain.handle('library:rename', (_e, id: string, title: string) => {
     try {

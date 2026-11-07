@@ -25,6 +25,9 @@ import type {
   LibraryKind,
   LibraryListItem,
   Progress,
+  SavedFile,
+  SavedFileInfo,
+  SavedFileKind,
   Segment,
   TranscribeOptions,
   TranscribeResult,
@@ -36,6 +39,10 @@ import { run } from './util';
 
 const TRANSCRIPT_EXTS: formats.FormatKind[] = ['txt', 'srt', 'vtt', 'json'];
 const ITEM_FILE = 'item.json';
+/** Files the Files tab may show (task 30), in this order. Only these — never any other path. */
+const SAVED_FILE_KINDS: SavedFileKind[] = ['txt', 'srt', 'vtt', 'json', 'summary'];
+/** Bigger than this is shown cut off (a very long meeting's .json); the file itself is fine. */
+const SAVED_FILE_SHOW_MAX = 2 * 1024 * 1024;
 
 /** item.json — one per folder, so a broken one can't break the whole list. */
 interface ItemJson {
@@ -307,7 +314,56 @@ export class Library {
     const base = this.transcriptBase(folder, id, this.audioOf(folder));
     const transcript = info.transcript ? this.readTranscript(base) : null;
     const segments = transcript?.segments || [];
-    return { ...info, folder, segments, summary: this.readSummary(folder, base, transcript) };
+    const files = this.savedFiles(base);
+    return { ...info, folder, segments, summary: this.readSummary(folder, base, transcript), files };
+  }
+
+  // ---------- Files tab (task 30) ----------
+
+  /** Where a saved file of this kind lives: "<base>.srt", or "<base>.summary.md" for the summary. */
+  private savedFilePath(base: string, kind: SavedFileKind): string {
+    if (!SAVED_FILE_KINDS.includes(kind)) throw new Error(`Unknown file type: ${String(kind)}`);
+    return kind === 'summary' ? this.summaryFile(base) : `${base}.${kind}`;
+  }
+
+  /** The item's saved files that exist, in SAVED_FILE_KINDS order. */
+  private savedFiles(base: string): SavedFileInfo[] {
+    const files: SavedFileInfo[] = [];
+    for (const kind of SAVED_FILE_KINDS) {
+      const file = this.savedFilePath(base, kind);
+      try {
+        files.push({ kind, name: path.basename(file), size: fs.statSync(file).size });
+      } catch {
+        // not saved (yet) → not listed
+      }
+    }
+    return files;
+  }
+
+  /** Read one saved file of an item, exactly as it is on disk (very big files are cut for display). */
+  readSavedFile(id: string, kind: SavedFileKind): SavedFile {
+    const folder = this.folderOf(id); // throws if the id points outside the library
+    const file = this.savedFilePath(this.transcriptBase(folder, id, this.audioOf(folder)), kind);
+    let size: number;
+    try {
+      size = fs.statSync(file).size;
+    } catch {
+      throw new Error(`${path.basename(file)} is not saved.`);
+    }
+    let text: string;
+    if (size <= SAVED_FILE_SHOW_MAX) {
+      text = fs.readFileSync(file, 'utf8');
+    } else {
+      const buf = Buffer.alloc(SAVED_FILE_SHOW_MAX);
+      const fd = fs.openSync(file, 'r');
+      try {
+        fs.readSync(fd, buf, 0, SAVED_FILE_SHOW_MAX, 0);
+      } finally {
+        fs.closeSync(fd);
+      }
+      text = `${buf.toString('utf8')}\n\n… (cut here: the file is ${Math.round(size / 1024 / 1024)} MB — open it from Finder to see all of it)`;
+    }
+    return { kind, name: path.basename(file), size, path: file, text };
   }
 
   // ---------- AI summary (task 26) ----------

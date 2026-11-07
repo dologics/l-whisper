@@ -6,6 +6,7 @@ import type {
   AiProvider,
   AppState,
   Hotkey,
+  SavedFileKind,
   LibraryProgress,
   ModelProgress,
   PermissionKind,
@@ -68,6 +69,7 @@ const api = {
   library: {
     list: () => ipcRenderer.invoke('library:list'),
     get: (id: string) => ipcRenderer.invoke('library:get', id),
+    readFile: (id: string, kind: SavedFileKind) => ipcRenderer.invoke('library:read-file', id, kind),
     rename: (id: string, title: string) => ipcRenderer.invoke('library:rename', id, title),
     delete: (id: string) => ipcRenderer.invoke('library:delete', id),
     reveal: (id: string) => ipcRenderer.invoke('library:reveal', id),
