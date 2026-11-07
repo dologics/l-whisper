@@ -55,6 +55,7 @@ import { Settings } from './settings';
 import { aboutInfo, setAboutPanel } from './about';
 import { openSystemSettings } from './system-settings';
 import { errorMessage, run, sleep } from './util';
+import { speakerLabels } from './transcript-formats';
 import { cleanUserName } from './user-name';
 import { WhisperEngine } from './whisper';
 
@@ -135,6 +136,7 @@ export class WhisperApp {
     ffprobePath: TOOLS.ffprobe,
     transcriber: this.fileTranscriber,
     recordingFolder: () => this.meeting.folder,
+    speakerLabels: () => speakerLabels(cleanUserName(this.settings.get('userName'))), // task 27
     log: (m) => console.log(`[library] ${m}`),
   });
 

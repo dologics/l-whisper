@@ -1,5 +1,8 @@
-// Meeting recording: your mic + the Mac's system audio → one .m4a file
-// (both voices mixed into both ears, each side levelled). Audio only, no transcription.
+// Meeting recording: your mic + the Mac's system audio → one .m4a file with two audio tracks:
+//   track 1 "Mix"      — both voices in both ears, each side levelled (what you hear when you play it)
+//   track 2 "Speakers" — the same levelled sides kept apart: left = your mic, right = system audio.
+//                        Hidden from playback; transcription uses it to label who spoke (task 27).
+// Audio only, no transcription here.
 //
 //   bin/meeting-recorder (Swift)  ──raw PCM──►  ffmpeg  ──►  "Meeting <date>.part.m4a"
 //
@@ -12,17 +15,39 @@ import path from 'node:path';
 import { errorMessage, onLines } from './util';
 
 const MIN_FREE_BYTES = 1024 ** 3; // refuse to start with < 1 GB free
-const BITRATE = '64k'; // AAC mono ≈ 29 MB per hour — plenty for speech
+const BITRATE = '64k'; // AAC ≈ 29 MB per hour per track — plenty for speech
+/** Name of the hidden 2nd track (left = mic, right = system), stored as the track's handler_name
+ *  (.m4a files drop "title"). The transcriber looks for it. */
+export const SPEAKERS_TRACK_TITLE = 'Speakers (L mic, R system)';
 
 // Both voices in both ears, at similar loudness:
 //   split you (left) / others (right) → level each side on its own (dynaudnorm, up to ×12,
-//   ~2 s look-ahead) → add together → limiter so nothing clips → mono.
-const MIX_FILTER = [
+//   ~2 s look-ahead) → add together → limiter so nothing clips → mono  [mix].
+// Each levelled side is also copied (asplit) and joined back as stereo → [sides]:
+//   the 2nd track, so whisper can tell your mic from the system audio later.
+export const MIX_FILTER = [
   '[0:a]channelsplit=channel_layout=stereo[you][others]',
-  '[you]highpass=f=80,afftdn=nr=12:nf=-50,dynaudnorm=f=250:g=9:m=12:p=0.9:t=0.002[y]',
-  '[others]dynaudnorm=f=250:g=9:m=12:p=0.9:t=0.002[o]',
+  '[you]highpass=f=80,afftdn=nr=12:nf=-50,dynaudnorm=f=250:g=9:m=12:p=0.9:t=0.002,asplit=2[y][ys]',
+  '[others]dynaudnorm=f=250:g=9:m=12:p=0.9:t=0.002,asplit=2[o][os]',
   '[y][o]amix=inputs=2:normalize=0,alimiter=limit=0.95[mix]',
+  '[ys][os]join=inputs=2:channel_layout=stereo,alimiter=limit=0.95[sides]',
 ].join(';');
+
+/** ffmpeg arguments: raw stereo PCM on stdin → fragmented .m4a with the Mix + Speakers tracks. */
+export function recordArgs(rate: number, outPath: string): string[] {
+  // prettier-ignore
+  return [
+    '-nostdin', '-hide_banner', '-loglevel', 'error',
+    '-f', 's16le', '-ar', String(rate), '-ac', '2', '-i', 'pipe:0',
+    '-filter_complex', MIX_FILTER,
+    '-map', '[mix]', '-map', '[sides]',
+    '-c:a', 'aac', '-b:a', BITRATE, '-ac:a:0', '1', '-ac:a:1', '2',
+    '-metadata:s:a:0', 'handler_name=Mix', '-metadata:s:a:1', `handler_name=${SPEAKERS_TRACK_TITLE}`,
+    '-disposition:a:0', 'default', '-disposition:a:1', '0', // players play the Mix
+    '-movflags', '+frag_keyframe+empty_moov+default_base_moof', '-frag_duration', '5000000',
+    outPath,
+  ];
+}
 
 /** Once a second while recording: elapsed time + mic/system loudness (dB, as text). */
 export interface MeetingTick {
@@ -143,17 +168,9 @@ export class MeetingRecorder {
       throw err;
     });
 
-    // 2) ffmpeg: level each side separately, mix both into both ears (mono), encode AAC
-    //    into a fragmented .m4a (playable at any moment).
-    // prettier-ignore
-    const ffmpeg = spawn(this.ffmpegPath, [
-      '-nostdin', '-hide_banner', '-loglevel', 'error',
-      '-f', 's16le', '-ar', String(rate), '-ac', '2', '-i', 'pipe:0',
-      '-filter_complex', MIX_FILTER, '-map', '[mix]', '-ac', '1',
-      '-c:a', 'aac', '-b:a', BITRATE,
-      '-movflags', '+frag_keyframe+empty_moov+default_base_moof', '-frag_duration', '5000000',
-      partPath,
-    ], { stdio: ['pipe', 'ignore', 'pipe'] });
+    // 2) ffmpeg: level each side separately; track 1 = both mixed (mono), track 2 = the two
+    //    sides kept apart (stereo); AAC into a fragmented .m4a (playable at any moment).
+    const ffmpeg = spawn(this.ffmpegPath, recordArgs(rate, partPath), { stdio: ['pipe', 'ignore', 'pipe'] });
     this.ffmpeg = ffmpeg;
     this.ffmpegDone = new Promise((resolve) => ffmpeg.on('close', resolve));
     onLines(ffmpeg.stderr, (raw) => {
@@ -215,7 +232,8 @@ export class MeetingRecorder {
   }
 }
 
-/** Re-pack a fragmented .part.m4a into a normal .m4a (fast, no re-encoding). */
+/** Re-pack a fragmented .part.m4a into a normal .m4a (fast, no re-encoding). `-map 0` keeps
+ *  every track — without it ffmpeg would keep only one audio track and drop the Speakers track. */
 function finalize(ffmpegPath: string, partPath: string, suffix = ''): Promise<string> {
   const dir = path.dirname(partPath);
   const base = path.basename(partPath, '.part.m4a') + suffix;
@@ -223,7 +241,20 @@ function finalize(ffmpegPath: string, partPath: string, suffix = ''): Promise<st
   return new Promise((resolve, reject) => {
     execFile(
       ffmpegPath,
-      ['-nostdin', '-loglevel', 'error', '-i', partPath, '-c', 'copy', '-movflags', '+faststart', finalPath],
+      [
+        '-nostdin',
+        '-loglevel',
+        'error',
+        '-i',
+        partPath,
+        '-map',
+        '0',
+        '-c',
+        'copy',
+        '-movflags',
+        '+faststart',
+        finalPath,
+      ],
       (err) => {
         if (err) return reject(new Error(`could not finish the file: ${err.message}`));
         fs.rmSync(partPath, { force: true });

@@ -68,6 +68,17 @@ export interface Segment {
   start: number;
   end?: number;
   text: string;
+  /** meetings (task 27): who spoke — 'mic' = you, 'system' = the other side; missing = unknown */
+  speaker?: Speaker;
+}
+
+/** Which side of a meeting a segment came from (left/right of the Speakers track). */
+export type Speaker = 'mic' | 'system';
+
+/** How speakers are named in transcripts: your name (or "Speaker 1") and "Speaker 2". */
+export interface SpeakerLabels {
+  mic: string;
+  system: string;
 }
 
 /** Overall progress of a file/meeting transcription. */
@@ -83,6 +94,8 @@ export interface TranscribeOptions {
   language?: string;
   /** output English whatever language is spoken (whisper -tr) */
   translate?: boolean;
+  /** a meeting: label who spoke, if the file has the Speakers track (task 27) */
+  speakers?: boolean;
 }
 
 /** What a finished transcription returns. */
@@ -92,6 +105,8 @@ export interface TranscribeResult {
   elapsedMs: number;
   language: string;
   translate: boolean;
+  /** segments carry a `speaker` (the meeting had the Speakers track) */
+  speakers?: boolean;
 }
 
 /** A dropped/chosen file we can transcribe… */

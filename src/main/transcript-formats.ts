@@ -5,13 +5,38 @@
 //   vtt   WebVTT captions (web/video players): WEBVTT header, 00:00:12.000 --> 00:00:15.500
 //   json  segments + details, so the app can reload a transcript with its timestamps
 //
+// Meetings (task 27): the .txt has NO timestamps (the other files have them). When segments
+// know who spoke (`speaker`: 'mic' | 'system'), lines are labelled with names:
+//   txt   "Mohsin: Hi everyone." / "Speaker 2: Yes, loud and clear."  (one paragraph per turn)
+//   srt   "Mohsin: Hi everyone."      vtt  "<v Mohsin>Hi everyone."   json  speaker: 'mic'
+// The json keeps the raw 'mic'/'system', so the names can be changed later.
+//
 // Plain Node, no Electron — unit-tested in test/transcript-formats.test.ts.
-import type { Segment } from '../shared/types';
+import type { Segment, SpeakerLabels } from '../shared/types';
 
 export type FormatKind = 'txt' | 'srt' | 'vtt' | 'json';
 
 /** Anything useful to keep in the json file (language, durationSec, source name…). */
 export type TranscriptDetails = Record<string, unknown>;
+
+/** How to write the text. Defaults: timestamps in .txt, generic speaker names. */
+export interface FormatOptions {
+  /** .txt only: "[mm:ss]" before each line (default true; meetings use false) */
+  timestamps?: boolean;
+  /** names for segments with a `speaker` */
+  labels?: SpeakerLabels;
+}
+
+/** Your name for the mic side (or "Speaker 1" if you didn't give one), "Speaker 2" for the other side. */
+export function speakerLabels(userName: string): SpeakerLabels {
+  return { mic: userName.trim() || 'Speaker 1', system: 'Speaker 2' };
+}
+const DEFAULT_LABELS = speakerLabels('');
+
+/** The name for a segment, or '' when nobody is known. */
+function labelOf(s: Segment, labels: SpeakerLabels): string {
+  return s.speaker ? labels[s.speaker] : '';
+}
 
 /** Segment end: given, else the next segment's start, else start + 3 s. */
 function endOf(segments: Segment[], i: number): number {
@@ -39,32 +64,82 @@ function captionClock(sec: number, sep: ',' | '.'): string {
   return `${h}:${m}:${s}${sep}${String(ms % 1000).padStart(3, '0')}`;
 }
 
-export function toTxt(segments: Segment[]): string {
-  return segments.map((s) => `[${shortClock(s.start)}] ${s.text}`).join('\n') + '\n';
+export function toTxt(segments: Segment[], { timestamps = true, labels = DEFAULT_LABELS }: FormatOptions = {}): string {
+  const withSpeakers = segments.some((s) => s.speaker);
+  // timestamps: one line per segment, "[00:12] Name: text" (no name when unknown)
+  if (timestamps) {
+    return (
+      segments
+        .map((s) => {
+          const name = labelOf(s, labels);
+          return `[${shortClock(s.start)}] ${name ? `${name}: ` : ''}${s.text}`;
+        })
+        .join('\n') + '\n'
+    );
+  }
+  // no timestamps, no speakers (e.g. an older meeting): plain lines
+  if (!withSpeakers) return segments.map((s) => s.text).join('\n') + '\n';
+  // no timestamps, speakers: one paragraph per turn, like a conversation. A segment with an
+  // unknown speaker (both talking at once) stays with the turn before it.
+  const turns: { name: string; texts: string[] }[] = [];
+  let current: Segment['speaker'];
+  for (const s of segments) {
+    const speaker = s.speaker ?? current;
+    const last = turns[turns.length - 1];
+    if (last && speaker === current) last.texts.push(s.text);
+    else turns.push({ name: speaker ? labels[speaker] : '', texts: [s.text] });
+    current = speaker;
+  }
+  return turns.map((t) => (t.name ? `${t.name}: ` : '') + t.texts.join(' ')).join('\n\n') + '\n';
 }
 
-export function toSrt(segments: Segment[]): string {
+export function toSrt(
+  segments: Segment[],
+  _details?: TranscriptDetails,
+  { labels = DEFAULT_LABELS }: FormatOptions = {}
+): string {
   return segments
-    .map((s, i) => `${i + 1}\n${captionClock(s.start, ',')} --> ${captionClock(endOf(segments, i), ',')}\n${s.text}\n`)
+    .map((s, i) => {
+      const name = labelOf(s, labels);
+      const text = name ? `${name}: ${s.text}` : s.text;
+      return `${i + 1}\n${captionClock(s.start, ',')} --> ${captionClock(endOf(segments, i), ',')}\n${text}\n`;
+    })
     .join('\n');
 }
 
-export function toVtt(segments: Segment[]): string {
+export function toVtt(
+  segments: Segment[],
+  _details?: TranscriptDetails,
+  { labels = DEFAULT_LABELS }: FormatOptions = {}
+): string {
   return (
     'WEBVTT\n\n' +
     segments
-      .map((s, i) => `${captionClock(s.start, '.')} --> ${captionClock(endOf(segments, i), '.')}\n${s.text}\n`)
+      .map((s, i) => {
+        // WebVTT voice tag; a name can't contain < > & (they would break the tag)
+        const name = labelOf(s, labels).replace(/[<>&]/g, '');
+        const text = name ? `<v ${name}>${s.text}` : s.text;
+        return `${captionClock(s.start, '.')} --> ${captionClock(endOf(segments, i), '.')}\n${text}\n`;
+      })
       .join('\n')
   );
 }
 
 export function toJson(segments: Segment[], details: TranscriptDetails = {}): string {
-  const clean = segments.map((s, i) => ({ start: s.start, end: endOf(segments, i), text: s.text }));
+  const clean = segments.map((s, i) => ({
+    start: s.start,
+    end: endOf(segments, i),
+    text: s.text,
+    ...(s.speaker && { speaker: s.speaker }), // raw 'mic' / 'system', names are added when written
+  }));
   return JSON.stringify({ ...details, segments: clean }, null, 2) + '\n';
 }
 
-const FORMATTERS: Record<FormatKind, (segments: Segment[], details?: TranscriptDetails) => string> = {
-  txt: toTxt,
+const FORMATTERS: Record<
+  FormatKind,
+  (segments: Segment[], details?: TranscriptDetails, opts?: FormatOptions) => string
+> = {
+  txt: (segments, _details, opts) => toTxt(segments, opts),
   srt: toSrt,
   vtt: toVtt,
   json: toJson,
@@ -73,8 +148,8 @@ const FORMATTERS: Record<FormatKind, (segments: Segment[], details?: TranscriptD
 export const FORMATS = Object.keys(FORMATTERS) as FormatKind[];
 
 /** Format by file extension ('txt' | 'srt' | 'vtt' | 'json'). */
-export function format(kind: string, segments: Segment[], details?: TranscriptDetails): string {
+export function format(kind: string, segments: Segment[], details?: TranscriptDetails, opts?: FormatOptions): string {
   const fn = FORMATTERS[kind as FormatKind];
   if (!fn) throw new Error(`Unknown transcript format: ${kind}`);
-  return fn(segments, details);
+  return fn(segments, details, opts);
 }

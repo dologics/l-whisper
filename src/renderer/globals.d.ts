@@ -17,6 +17,7 @@ type LibraryItemDetail = import('../shared/types').LibraryItemDetail;
 type SavedFile = import('../shared/types').SavedFile;
 type SavedFileInfo = import('../shared/types').SavedFileInfo;
 type SavedFileKind = import('../shared/types').SavedFileKind;
+type Speaker = import('../shared/types').Speaker;
 type LibraryListItem = import('../shared/types').LibraryListItem;
 type Hotkey = import('../shared/types').Hotkey;
 type Modifier = import('../shared/types').Modifier;

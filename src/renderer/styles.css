@@ -256,6 +256,11 @@ select { font: inherit; padding: 3px 6px; border-radius: 6px; border: 1px solid 
   padding: 12px 14px; font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap;
   overflow-wrap: anywhere; user-select: text; -webkit-user-select: text; color: var(--text);
 }
+/* meeting speaker name before a line (task 27): you in the accent colour, the other side neutral */
+.who { font-weight: 600; margin-right: 6px; }
+.who::after { content: ':'; }
+.who-mic { color: var(--accent); }
+.who-system { color: var(--text); }
 .transcript p.line { cursor: pointer; border-radius: 6px; padding: 2px 6px; margin: 0 -6px 6px; }
 .transcript p.line:hover { background: var(--chip); }
 .transcript p.line.current { background: var(--accent-soft); }

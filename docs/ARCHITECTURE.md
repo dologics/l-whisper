@@ -46,8 +46,8 @@ L - Whisper.app (Electron main process, src/main/main.ts → WhisperApp in app.t
 | `src/main/hotkey.ts` | The dictation key: `HotkeyMatcher` (held modifiers → `down` / `up` / `combo` for Fn or a two-key combo), `parseHotkey` (validation), `hotkeyLabel` ("fn", "⌃⌥"). Tested in `test/hotkey.test.ts` |
 | `src/main/hotkey-gesture.ts` | `HotkeyGesture` — pure state machine: hold / tap / double-tap / key+other key. Tested in `test/hotkey-gesture.test.ts` |
 | `src/main/key-listener.ts` | `KeyListener` — runs the Swift helper, parses its stdout (`mods …`, `key`, status), `paste(text)`, `requestPermissions()` (typed events) |
-| `src/main/file-transcriber.ts` | `FileTranscriber` — ffprobe info → ffmpeg to WAV → whisper-cli with progress + JSON segments; cancel; temp cleanup |
-| `src/main/meeting.ts` | `MeetingRecorder` — runs meeting-recorder | ffmpeg, start/stop, timer, levels, mic name, crash recovery (`recover()`) |
+| `src/main/file-transcriber.ts` | `FileTranscriber` — ffprobe info → ffmpeg to WAV → whisper-cli with progress + JSON segments; meetings with the Speakers track → stereo + `-di` → `speaker` per segment; cancel; temp cleanup |
+| `src/main/meeting.ts` | `MeetingRecorder` — runs meeting-recorder | ffmpeg, start/stop, timer, levels, mic name, crash recovery (`recover()`); `recordArgs()` = Mix + hidden Speakers track |
 | `native/meeting-recorder.swift` | Core Audio **process tap** (all system audio) + the **call's mic** in a private aggregate device; follows mic switches (2 s watchdog); resamples to 48 kHz; stereo PCM on stdout (L = you, R = others) |
 | `src/main/ai/find-cli.ts` | Finds `claude` / `codex` without the Terminal's PATH: hand-picked path → `~/.local/bin`, `~/.claude/local`, Homebrew, npm/bun/volta/nvm folders → login shell `whence -p` (real file, never a shell function). Tested in `test/ai.test.ts` |
 | `src/main/ai/summarizer.ts` | `Summarizer.ask(provider, cli, prompt)` — spawns the CLI (no shell) in an empty temp folder, prompt on stdin, tools off, 5-min timeout, cancel; claude `-p --output-format json` (`is_error`/`result`), codex `exec … --output-last-message`; `friendlyError` (not signed in / usage limit). Tested with fake CLIs |
@@ -132,8 +132,12 @@ renderer (drop / Choose File…) ──IPC file:transcribe──► FileTranscri
 menu "Start Meeting Recording" → MeetingRecorder.start()
   meeting-recorder (Swift): mic the call uses (else default) + process tap → 48 kHz stereo PCM
   └─► ffmpeg: you: highpass 80 Hz + afftdn denoise + dynaudnorm │ others: dynaudnorm
-             → amix → limiter → mono AAC 64 kbps → fragmented "Meeting <date>.part.m4a" (5 s fragments)
-menu "Stop" → helper stops → ffmpeg ends → remux (no re-encode) → "Meeting <date>.m4a" + notification
+             → track 1 "Mix": amix → limiter → mono AAC 64 kbps (default, what you hear)
+             → track 2 "Speakers (L mic, R system)": the same levelled sides as stereo AAC (hidden, task 27)
+             → fragmented "Meeting <date>.part.m4a" (5 s fragments)
+menu "Stop" → helper stops → ffmpeg ends → remux `-map 0` (no re-encode, keeps both tracks) → "Meeting <date>.m4a" + notification
+transcribe a meeting → Speakers track found (handler_name) → 16 kHz stereo wav → whisper-cli -di
+             → speaker 0 = mic (your name / "Speaker 1"), 1 = system ("Speaker 2"), ? = unknown
 crash → .part.m4a stays playable → next launch: recover() → "… (recovered).m4a"
 ```
 - Menu bar: ` ◉ 12:34` (dictation ●/… takes priority while active); menu shows "Recording mic: <device>".
@@ -244,7 +248,9 @@ Finish → onboarded = true · Settings → "Run setup again" → onboarded = fa
 | Feedback sounds generated with Web Audio (sine, ~10 % volume), no files | Soft and tweakable in code (`SOUNDS` in `src/recorder/recorder.ts`); user approved (task 13) |
 | Meeting: **process tap** for system audio (not BlackHole, not Screen Recording) | One permission, any app, any output device (task 14) |
 | Meeting: record **the mic the call uses**, follow switches | User switches between Mac mic, headset, hands-free; default input is often the wrong one |
-| Meeting: **mono, both voices levelled** (not L/R split) | User's choice — normal listening; You/Others split gone (would need stereo again) |
+| Meeting: **mono, both voices levelled** (not L/R split) for listening | User's choice — normal listening |
+| Meeting: **hidden 2nd track** (stereo, L = mic, R = system) + `whisper-cli -di` for speaker labels | Task 27 (user approved): labels by source — mic = your name or "Speaker 1", system = "Speaker 2". Only meetings recorded from task 27 on; +~29 MB/h |
+| Meeting `.txt` **without timestamps**, one paragraph per speaker turn; srt/vtt/json keep timestamps; dropped files keep timestamps everywhere | User's choice (task 27): the timed files exist for times; "Me/Other" rejected — confusing when shared |
 | Meeting: mic side `highpass + afftdn` denoise, `dynaudnorm t=0.002` | Without them the leveller boosted mic hiss/room noise (user heard constant noise; Whisper invented words) |
 | Meeting: fragmented .m4a while recording | Crash/power loss keeps everything up to the last ~5 s |
 | Meeting: Fn dictation keeps working during a recording | My default (quick notes); user didn't object |

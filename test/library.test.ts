@@ -182,6 +182,43 @@ test('readSavedFile only reads the fixed kinds, never other paths', async () => 
   assert.throws(() => lib.readSavedFile('../outside', 'txt')); // ids stay inside the library
 });
 
+test('meetings: asks for speakers, .txt has names and no timestamps; AI text matches', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'library-test-'));
+  const asked: (boolean | undefined)[] = [];
+  const fake = {
+    transcribe: async (_f: string, _p: unknown, opts?: { speakers?: boolean }) => {
+      asked.push(opts?.speakers);
+      return {
+        segments: [
+          { start: 0, end: 2, text: 'Hi there.', speaker: 'mic' as const },
+          { start: 2, end: 4, text: 'Hello!', speaker: 'system' as const },
+        ],
+        durationSec: 4,
+        language: 'en',
+        speakers: true,
+      };
+    },
+  };
+  const lib = new Library({ dir, transcriber: fake, speakerLabels: () => ({ mic: 'Sara', system: 'Speaker 2' }) });
+  fs.mkdirSync(path.join(dir, 'Meeting S'));
+  fs.writeFileSync(path.join(dir, 'Meeting S', 'Meeting S.m4a'), 'audio');
+  await lib.transcribe('Meeting S', { language: 'en' }, () => {});
+  assert.deepStrictEqual(asked, [true]);
+  const txt = fs.readFileSync(path.join(dir, 'Meeting S', 'Meeting S.txt'), 'utf8');
+  assert.strictEqual(txt, 'Sara: Hi there.\n\nSpeaker 2: Hello!\n');
+  assert.ok(fs.readFileSync(path.join(dir, 'Meeting S', 'Meeting S.vtt'), 'utf8').includes('<v Speaker 2>Hello!'));
+  assert.strictEqual(lib.transcriptText('Meeting S'), 'Sara: Hi there.\n\nSpeaker 2: Hello!');
+  assert.strictEqual(lib.hasSpeakers('Meeting S'), true);
+  assert.strictEqual((await lib.get('Meeting S')).segments[1].speaker, 'system');
+});
+
+test('file items: no speakers asked, .txt keeps timestamps', async () => {
+  const { dir, lib, makeSource, result } = setup();
+  const id = lib.createFromFile(makeSource('talk.mp4'), result);
+  assert.ok(fs.readFileSync(path.join(dir, id, `${id}.txt`), 'utf8').startsWith('[00:00] Hello there.'));
+  assert.strictEqual(lib.hasSpeakers(id), false);
+});
+
 // ---------- items made from dropped files ----------
 
 test('createFromFile saves transcripts + item.json, never copies or moves the original', async () => {

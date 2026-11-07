@@ -94,7 +94,9 @@ export class AiSummary {
       const text = this.library.transcriptText(id);
       if (!text) return { ok: false, error: 'Transcribe it first — there is no transcript to summarize yet.' };
       this.log(`summarizing “${id}” with ${r.provider} (${text.length} characters)`);
-      const answer = await this.summarizer.ask(r.provider, r.cli, buildSummaryPrompt(text, id));
+      // meetings with speaker labels: tell the AI who the names are (task 27)
+      const labels = this.library.hasSpeakers(id) ? this.library.speakerNames() : undefined;
+      const answer = await this.summarizer.ask(r.provider, r.cli, buildSummaryPrompt(text, id, labels));
       return { ok: true, summary: this.library.saveSummary(id, answer, r.provider) };
     } catch (err) {
       if (err instanceof SummaryCancelled) return { ok: false, cancelled: true };

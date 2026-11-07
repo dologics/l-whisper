@@ -289,6 +289,9 @@ function render(state: AppState): void {
   for (const input of $$<HTMLInputElement>('#userNameInput, #setupUserName')) {
     if (document.activeElement !== input) input.value = state.userName;
   }
+  // speaker names in an open meeting transcript follow the name right away
+  currentUserName = state.userName;
+  $$('.who-mic').forEach((el) => (el.textContent = speakerName('mic')));
   $$('[data-perm]').forEach((row) => {
     const kind = row.dataset.perm as PermissionKind;
     const allowed = state.permissions[kind];
@@ -582,6 +585,12 @@ const audio = $<HTMLAudioElement>('#mAudio');
 const LANG_NAMES: Record<string, string> = { auto: 'Auto', en: 'English', ur: 'Urdu' };
 let itemId: string | null = null; // item open in the detail view
 let itemSegments: Segment[] = []; // its transcript
+let currentUserName = ''; // Settings → Your name ('' = not set)
+
+/** Name shown for a meeting speaker (same rule as the saved files: transcript-formats.ts speakerLabels). */
+function speakerName(speaker: Speaker): string {
+  return speaker === 'mic' ? currentUserName || 'Speaker 1' : 'Speaker 2';
+}
 const itemProgress = new Map<string, number>(); // id → percent while transcribing
 let libraryFilter: 'all' | 'meeting' | 'file' = 'all'; // list filter chips
 
@@ -735,7 +744,15 @@ function renderItemTranscript(m: LibraryItemDetail): void {
       const ts = document.createElement('span');
       ts.className = 'ts';
       ts.textContent = formatClock(seg.start);
-      p.append(ts, seg.text); // text, never HTML
+      p.append(ts);
+      // meetings (task 27): who spoke — your name / "Speaker 1" (mic) or "Speaker 2" (system)
+      if (seg.speaker) {
+        const who = document.createElement('span');
+        who.className = `who who-${seg.speaker}`;
+        who.textContent = speakerName(seg.speaker);
+        p.append(who);
+      }
+      p.append(seg.text); // text, never HTML
       p.addEventListener('click', () => {
         audio.currentTime = seg.start;
         void audio.play();
@@ -919,7 +936,13 @@ $('#mCancel').addEventListener('click', () => api.library.cancel());
 $('#mBack').addEventListener('click', () => void showLibraryList());
 $('#mReveal').addEventListener('click', () => itemId && api.library.reveal(itemId));
 $('#mCopy').addEventListener('click', async () => {
-  await api.copyTranscript(itemSegments);
+  // Copy = the item's saved .txt (meetings: names, no timestamps; files: with timestamps)
+  try {
+    if (itemId === null) throw new Error('no item');
+    await api.copyText((await api.library.readFile(itemId, 'txt')).text);
+  } catch {
+    await api.copyTranscript(itemSegments); // .txt missing → copy from the segments on screen
+  }
   flash($('#mCopy'), 'Copied');
 });
 $('#mDelete').addEventListener('click', async () => {

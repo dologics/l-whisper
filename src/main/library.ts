@@ -29,6 +29,7 @@ import type {
   SavedFileInfo,
   SavedFileKind,
   Segment,
+  SpeakerLabels,
   TranscribeOptions,
   TranscribeResult,
   TranscriptInfo,
@@ -88,6 +89,8 @@ export interface LibraryOptions {
   transcriber: LibraryTranscriber;
   /** folder being recorded right now (or null) */
   recordingFolder?: () => string | null;
+  /** names for meeting speakers: your name (Settings) or "Speaker 1", and "Speaker 2" (task 27) */
+  speakerLabels?: () => SpeakerLabels;
   log?: (line: string) => void;
 }
 
@@ -141,6 +144,7 @@ export class Library {
   private readonly ffprobePath: string;
   private readonly transcriber: LibraryTranscriber;
   private readonly recordingFolder: () => string | null;
+  private readonly speakerLabels: () => SpeakerLabels;
   private readonly log: (line: string) => void;
   private readonly durations = new Map<string, number>(); // audio path + mtime → seconds (ffprobe once per file)
 
@@ -149,12 +153,14 @@ export class Library {
     ffprobePath = 'ffprobe',
     transcriber,
     recordingFolder = () => null,
+    speakerLabels = () => formats.speakerLabels(''),
     log = () => {},
   }: LibraryOptions) {
     this.dir = dir;
     this.ffprobePath = ffprobePath;
     this.transcriber = transcriber;
     this.recordingFolder = recordingFolder;
+    this.speakerLabels = speakerLabels;
     this.log = log;
   }
 
@@ -387,14 +393,26 @@ export class Library {
     return { text, provider: meta?.provider ?? null, createdAt, outdated: transcribedAt > createdAt };
   }
 
-  /** The transcript as plain text for the AI: one line per segment, no timestamps. */
+  /** The transcript as plain text for the AI: no timestamps; meetings with speakers as
+   *  "Name: …" turns (same as the .txt), others one line per segment. */
   transcriptText(id: string): string {
     const folder = this.folderOf(id);
     const data = this.readTranscript(this.transcriptBase(folder, id, this.audioOf(folder)));
-    return (data?.segments ?? [])
-      .map((s) => s.text.trim())
-      .filter(Boolean)
-      .join('\n');
+    const segments = (data?.segments ?? []).filter((s) => s.text.trim());
+    if (!segments.length) return '';
+    return formats.toTxt(segments, { timestamps: false, labels: this.speakerLabels() }).trim();
+  }
+
+  /** The names used for meeting speakers right now (your name / "Speaker 1", "Speaker 2"). */
+  speakerNames(): SpeakerLabels {
+    return this.speakerLabels();
+  }
+
+  /** Whether an item's transcript has speaker labels (for the AI prompt). */
+  hasSpeakers(id: string): boolean {
+    const folder = this.folderOf(id);
+    const data = this.readTranscript(this.transcriptBase(folder, id, this.audioOf(folder)));
+    return (data?.segments ?? []).some((s) => s.speaker);
   }
 
   /** Save an AI summary as <name>.summary.md (written to a temp file first, so it's never half-written). */
@@ -444,10 +462,16 @@ export class Library {
     return title;
   }
 
-  /** Write txt/srt/vtt/json transcripts at `base`.<ext>. */
-  private writeTranscripts(base: string, segments: Segment[], details: formats.TranscriptDetails): void {
+  /** Write txt/srt/vtt/json transcripts at `base`.<ext>. Meetings: .txt without timestamps (task 27). */
+  private writeTranscripts(
+    base: string,
+    segments: Segment[],
+    details: formats.TranscriptDetails,
+    meeting = false
+  ): void {
+    const opts = { timestamps: !meeting, labels: this.speakerLabels() };
     for (const ext of TRANSCRIPT_EXTS) {
-      fs.writeFileSync(`${base}.${ext}`, formats.format(ext, segments, details), 'utf8');
+      fs.writeFileSync(`${base}.${ext}`, formats.format(ext, segments, details, opts), 'utf8');
     }
   }
 
@@ -455,15 +479,19 @@ export class Library {
   async transcribe(id: string, opts: TranscribeOptions, onProgress: (progress: Progress) => void) {
     const folder = this.folderOf(id);
     const audio = this.audioPath(id); // throws if a file item's original is gone
-    const result = await this.transcriber.transcribe(audio, onProgress, opts);
+    const meeting = this.audioOf(folder) !== null; // a meeting's own .m4a (not a dropped file)
+    // meetings: ask for speaker labels (used if the recording has the Speakers track)
+    const result = await this.transcriber.transcribe(audio, onProgress, { ...opts, speakers: meeting });
     const details = {
       language: opts.language || result.language,
       translate: Boolean(opts.translate),
       durationSec: result.durationSec,
       transcribedAt: new Date().toISOString(),
+      ...(result.speakers && { speakers: true }),
     };
-    this.writeTranscripts(this.transcriptBase(folder, id, this.audioOf(folder)), result.segments, details);
-    this.log(`transcribed “${id}” (${result.segments.length} segments) → .txt .srt .vtt .json`);
+    this.writeTranscripts(this.transcriptBase(folder, id, this.audioOf(folder)), result.segments, details, meeting);
+    const labelled = result.speakers ? ', with speakers' : '';
+    this.log(`transcribed “${id}” (${result.segments.length} segments${labelled}) → .txt .srt .vtt .json`);
     return { ...result, ...details };
   }
 

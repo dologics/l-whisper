@@ -7,11 +7,16 @@
 // Why whisper-cli and not the dictation server: the server only answers when the whole
 // file is done, with no progress. whisper-cli reports progress and writes timed segments.
 // Why no VAD here: in tests it dropped whole phrases from long files (and progress hit 133 %).
+//
+// Meetings (task 27): the .m4a has a hidden 2nd track "Speakers" (left = your mic, right = the
+// system audio). If asked (opts.speakers) and it's there, we transcribe THAT track in stereo with
+// `whisper-cli --diarize`, which marks each segment speaker 0 (left) or 1 (right), "?" if unsure.
 import { spawn, type ChildProcess } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import type { FileInfo, Progress, Segment, TranscribeOptions, TranscribeResult } from '../shared/types';
+import type { FileInfo, Progress, Segment, Speaker, TranscribeOptions, TranscribeResult } from '../shared/types';
+import { SPEAKERS_TRACK_TITLE } from './meeting';
 import { onLines, run } from './util';
 
 // prettier-ignore
@@ -32,10 +37,13 @@ interface ProbeResult {
   format?: { duration?: string };
 }
 
-/** whisper-cli's -oj output (only the fields we read). */
+/** whisper-cli's -oj output (only the fields we read). `speaker` only with --diarize. */
 interface WhisperCliJson {
-  transcription?: { offsets: { from: number; to: number }; text: string }[];
+  transcription?: { offsets: { from: number; to: number }; text: string; speaker?: string }[];
 }
+
+/** whisper --diarize: "0" = left channel = mic, "1" = right = system, "?" = can't tell. */
+const DIARIZE_SPEAKERS: Record<string, Speaker> = { '0': 'mic', '1': 'system' };
 
 /** Paths of the programs the transcriber runs (shipped in the app's bin/). */
 export interface TranscriberTools {
@@ -132,12 +140,20 @@ export class FileTranscriber {
     };
 
     try {
-      // 1) extract audio (0–10 %)
-      this.log(`extracting audio from ${info.name} (${info.durationSec.toFixed(0)} s)`);
+      // meetings: is the Speakers track there? (old meetings don't have it → normal transcript)
+      const speakersStream = opts.speakers ? await this.findSpeakersTrack(filePath) : null;
+      const speakers = speakersStream !== null;
+
+      // 1) extract audio (0–10 %): normally the first audio track as mono; for speaker labels the
+      //    Speakers track as stereo (whisper keeps the two sides apart to compare them)
+      this.log(
+        `extracting audio from ${info.name} (${info.durationSec.toFixed(0)} s${speakers ? ', with speakers' : ''})`
+      );
+      const pick = speakers ? ['-map', `0:${speakersStream}`, '-ac', '2'] : ['-vn', '-ac', '1'];
       // prettier-ignore
       await this.spawnTool(this.tools.ffmpeg, [
         '-nostdin', '-hide_banner', '-loglevel', 'error', '-y',
-        '-i', filePath, '-vn', '-ar', '16000', '-ac', '1', '-c:a', 'pcm_s16le', wav,
+        '-i', filePath, ...pick, '-ar', '16000', '-c:a', 'pcm_s16le', wav,
         '-progress', 'pipe:1', '-nostats',
       ], {
         onStdout: (line) => {
@@ -155,6 +171,7 @@ export class FileTranscriber {
         ...(translate ? ['-tr'] : []),
         // English punctuation example — skipped for Urdu so it can't nudge the output to English
         ...(language === 'ur' && !translate ? [] : ['--prompt', STYLE_PROMPT]),
+        ...(speakers ? ['-di'] : []), // stereo diarization: speaker 0 (left) / 1 (right) per segment
         '-pp', // print progress
         '-oj', '-of', outBase, // write timed segments to transcript.json
         '-np', // no other console output
@@ -167,12 +184,17 @@ export class FileTranscriber {
 
       const json = JSON.parse(fs.readFileSync(`${outBase}.json`, 'utf8')) as WhisperCliJson;
       const segments: Segment[] = (json.transcription || [])
-        .map((s) => ({ start: s.offsets.from / 1000, end: s.offsets.to / 1000, text: s.text.trim() }))
+        .map((s) => {
+          const seg: Segment = { start: s.offsets.from / 1000, end: s.offsets.to / 1000, text: s.text.trim() };
+          const speaker = speakers && s.speaker !== undefined ? DIARIZE_SPEAKERS[s.speaker] : undefined;
+          if (speaker) seg.speaker = speaker;
+          return seg;
+        })
         .filter((s) => s.text);
       report(100);
       const elapsedMs = Date.now() - t0;
       this.log(`done: ${segments.length} segments in ${(elapsedMs / 1000).toFixed(1)} s`);
-      return { segments, durationSec: info.durationSec, elapsedMs, language, translate };
+      return { segments, durationSec: info.durationSec, elapsedMs, language, translate, ...(speakers && { speakers }) };
     } catch (err) {
       if (this.cancelled) throw new TranscriptionCancelled('Cancelled');
       throw err;
@@ -180,6 +202,24 @@ export class FileTranscriber {
       this.child = null;
       this.busy = false;
       fs.rm(workDir, { recursive: true, force: true }, () => {}); // remove temp audio + json
+    }
+  }
+
+  /** Stream index of a meeting's Speakers track (see meeting.ts), or null if the file has none. */
+  private async findSpeakersTrack(filePath: string): Promise<number | null> {
+    try {
+      // prettier-ignore
+      const out = await run(this.tools.ffprobe, [
+        '-v', 'error', '-select_streams', 'a',
+        '-show_entries', 'stream=index,channels:stream_tags=handler_name', '-of', 'json', filePath,
+      ]);
+      const data = JSON.parse(out) as {
+        streams?: { index: number; channels?: number; tags?: { handler_name?: string } }[];
+      };
+      const track = (data.streams || []).find((s) => s.tags?.handler_name === SPEAKERS_TRACK_TITLE && s.channels === 2);
+      return track ? track.index : null;
+    } catch {
+      return null; // can't tell → transcribe without labels
     }
   }
 

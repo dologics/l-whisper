@@ -141,3 +141,10 @@ test('prompt: instructions + title + plain transcript', () => {
   assert.match(p, /## Action items/);
   assert.match(p, /Title: Client call\n\nTranscript:\nLine one.\nLine two.\n$/);
 });
+
+test('meeting with speakers: the prompt says who the names are', () => {
+  const p = buildSummaryPrompt('Sara: Hi.\n\nSpeaker 2: Hello.', 'Call', { mic: 'Sara', system: 'Speaker 2' });
+  assert.ok(p.includes('"Sara" is the person who recorded this meeting'));
+  assert.ok(p.includes('"Speaker 2" is everyone else on the call'));
+  assert.ok(!buildSummaryPrompt('Hi.', 'Call').includes('recorded this meeting')); // no labels → no note
+});

@@ -48,6 +48,9 @@ Read before debugging. Each one cost real time once.
 | "Others" transcript is gibberish "Icelandic" | Conversation in **Urdu**, auto-detect fooled | Not a recording bug — listen to the file; use a language setting |
 | Testing system audio from a terminal would ask the user to let *Claude/Terminal* record audio | Permission goes to the app that launches the helper | Test inside the installed app: `open -n --env WHISPER_MEETING_TEST=20 --stdout log --stderr log "/Applications/L - Whisper.app"` |
 | Constant hiss/noise in recordings | Leveller (dynaudnorm) boosting mic noise | `t=0.002` threshold + `highpass,afftdn` on the mic side |
+| A meeting's Speakers track vanishes after Stop | `ffmpeg -c copy` keeps only ONE audio track by default | `finalize()` uses `-map 0` |
+| Track `title` set with `-metadata:s:a:1 title=…` is missing in the .m4a | The mp4/m4a muxer drops `title` | Use `handler_name` (the transcriber looks for it) |
+| Bundled ffmpeg: "Requested output format 's16le' is not known" | Our LGPL build can read raw PCM but not write it | For test input write raw PCM with Python (`wave`) or use Homebrew's ffmpeg |
 | `whisper-cli -f <(ffmpeg …)` fails with Broken pipe | whisper-cli can't read from a pipe | Convert to a temp .wav first |
 | Swift build output says "error" | Swift 6 *warnings* contain the words "an error in the Swift 6 language mode" | Grep for `: error:` instead |
 
