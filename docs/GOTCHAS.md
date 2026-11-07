@@ -48,6 +48,8 @@ Read before debugging. Each one cost real time once.
 | "Others" transcript is gibberish "Icelandic" | Conversation in **Urdu**, auto-detect fooled | Not a recording bug — listen to the file; use a language setting |
 | Testing system audio from a terminal would ask the user to let *Claude/Terminal* record audio | Permission goes to the app that launches the helper | Test inside the installed app: `open -n --env WHISPER_MEETING_TEST=20 --stdout log --stderr log "/Applications/L - Whisper.app"` |
 | Constant hiss/noise in recordings | Leveller (dynaudnorm) boosting mic noise | `t=0.002` threshold + `highpass,afftdn` on the mic side |
+| Meeting transcript gives both people's words to one speaker | `whisper-cli --diarize` labels whole segments, and whisper's segments often span several turns (real call: 2 segments in 45 s) | Word-level assignment in `speakers.ts` (DTW word times) — don't go back to `-di` |
+| DTW word times are all `-1` (`t_dtw`) | whisper.cpp skips DTW while flash attention is on | Pass `-nfa` with `-dtw <preset>` |
 | A meeting's Speakers track vanishes after Stop | `ffmpeg -c copy` keeps only ONE audio track by default | `finalize()` uses `-map 0` |
 | Track `title` set with `-metadata:s:a:1 title=…` is missing in the .m4a | The mp4/m4a muxer drops `title` | Use `handler_name` (the transcriber looks for it) |
 | Bundled ffmpeg: "Requested output format 's16le' is not known" | Our LGPL build can read raw PCM but not write it | For test input write raw PCM with Python (`wave`) or use Homebrew's ffmpeg |

@@ -9,14 +9,17 @@
 // Why no VAD here: in tests it dropped whole phrases from long files (and progress hit 133 %).
 //
 // Meetings (task 27): the .m4a has a hidden 2nd track "Speakers" (left = your mic, right = the
-// system audio). If asked (opts.speakers) and it's there, we transcribe THAT track in stereo with
-// `whisper-cli --diarize`, which marks each segment speaker 0 (left) or 1 (right), "?" if unsure.
+// system audio). If asked (opts.speakers) and it's there, whisper transcribes the normal mix as
+// usual but also reports WHEN each word was said (DTW word timing, -ojf), and speakers.ts gives
+// each word the side that was talking at that moment, splitting segments where it changes.
+// (whisper's own --diarize labels whole segments, which in real calls hold several turns.)
 import { spawn, type ChildProcess } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import type { FileInfo, Progress, Segment, Speaker, TranscribeOptions, TranscribeResult } from '../shared/types';
+import type { FileInfo, Progress, Segment, TranscribeOptions, TranscribeResult } from '../shared/types';
 import { SPEAKERS_TRACK_TITLE } from './meeting';
+import { assignSpeakers, channelLevels, dtwPreset, type TimedSegment } from './speakers';
 import { onLines, run } from './util';
 
 // prettier-ignore
@@ -31,19 +34,40 @@ const STYLE_PROMPT = 'Hello. Welcome, everyone.';
 
 export class TranscriptionCancelled extends Error {}
 
+/** The samples of a 16-bit PCM .wav file written by ffmpeg (finds the "data" chunk). */
+export function readWavPcm(file: string): Int16Array {
+  const buf = fs.readFileSync(file);
+  let pos = 12; // after "RIFF" <size> "WAVE"
+  while (pos + 8 <= buf.length) {
+    const id = buf.toString('ascii', pos, pos + 4);
+    const size = buf.readUInt32LE(pos + 4);
+    if (id === 'data') {
+      const bytes = Math.min(size, buf.length - pos - 8) & ~1;
+      return new Int16Array(buf.buffer.slice(buf.byteOffset + pos + 8, buf.byteOffset + pos + 8 + bytes));
+    }
+    pos += 8 + size + (size % 2);
+  }
+  throw new Error('No audio data in the speakers file.');
+}
+
 /** ffprobe's JSON answer (only the fields we read). */
 interface ProbeResult {
   streams?: { codec_type?: string }[];
   format?: { duration?: string };
 }
 
-/** whisper-cli's -oj output (only the fields we read). `speaker` only with --diarize. */
+/** whisper-cli's -oj / -ojf output (only the fields we read). `tokens` only with -ojf. */
 interface WhisperCliJson {
-  transcription?: { offsets: { from: number; to: number }; text: string; speaker?: string }[];
+  transcription?: {
+    offsets: { from: number; to: number };
+    text: string;
+    /** -ojf: each piece of text; t_dtw = DTW word time in 1/100 s (-1 if not computed) */
+    tokens?: { text: string; offsets: { from: number; to: number }; t_dtw?: number }[];
+  }[];
 }
 
-/** whisper --diarize: "0" = left channel = mic, "1" = right = system, "?" = can't tell. */
-const DIARIZE_SPEAKERS: Record<string, Speaker> = { '0': 'mic', '1': 'system' };
+/** Rate for the Speakers track copy we measure loudness on (plenty for "who is talking"). */
+const LEVELS_RATE = 8000;
 
 /** Paths of the programs the transcriber runs (shipped in the app's bin/). */
 export interface TranscriberTools {
@@ -124,6 +148,7 @@ export class FileTranscriber {
     const language = opts.language || this.getLanguage();
     const translate = Boolean(opts.translate);
     const t0 = Date.now();
+    const dtw = dtwPreset(modelPath); // word timing for speaker labels (null → whisper's own token times)
     const workDir = fs.mkdtempSync(path.join(os.tmpdir(), 'whisper-desktop-file-'));
     const wav = path.join(workDir, 'audio.wav');
     const outBase = path.join(workDir, 'transcript');
@@ -144,16 +169,21 @@ export class FileTranscriber {
       const speakersStream = opts.speakers ? await this.findSpeakersTrack(filePath) : null;
       const speakers = speakersStream !== null;
 
-      // 1) extract audio (0–10 %): normally the first audio track as mono; for speaker labels the
-      //    Speakers track as stereo (whisper keeps the two sides apart to compare them)
+      // 1) extract audio (0–10 %): 16 kHz mono for whisper (meetings: the Mix track); for speaker
+      //    labels also the Speakers track as small stereo, to see which side talks when
       this.log(
         `extracting audio from ${info.name} (${info.durationSec.toFixed(0)} s${speakers ? ', with speakers' : ''})`
       );
-      const pick = speakers ? ['-map', `0:${speakersStream}`, '-ac', '2'] : ['-vn', '-ac', '1'];
+      const sidesWav = path.join(workDir, 'sides.wav');
+      // prettier-ignore
+      const pick = speakers
+        ? ['-map', '0:a:0', '-ar', '16000', '-ac', '1', '-c:a', 'pcm_s16le', wav,
+           '-map', `0:${speakersStream}`, '-ac', '2', '-ar', String(LEVELS_RATE), '-c:a', 'pcm_s16le', sidesWav]
+        : ['-vn', '-ar', '16000', '-ac', '1', '-c:a', 'pcm_s16le', wav];
       // prettier-ignore
       await this.spawnTool(this.tools.ffmpeg, [
         '-nostdin', '-hide_banner', '-loglevel', 'error', '-y',
-        '-i', filePath, ...pick, '-ar', '16000', '-c:a', 'pcm_s16le', wav,
+        '-i', filePath, ...pick,
         '-progress', 'pipe:1', '-nostats',
       ], {
         onStdout: (line) => {
@@ -171,9 +201,10 @@ export class FileTranscriber {
         ...(translate ? ['-tr'] : []),
         // English punctuation example — skipped for Urdu so it can't nudge the output to English
         ...(language === 'ur' && !translate ? [] : ['--prompt', STYLE_PROMPT]),
-        ...(speakers ? ['-di'] : []), // stereo diarization: speaker 0 (left) / 1 (right) per segment
+        // speakers: word times (DTW needs flash attention off) + every token in the json
+        ...(speakers ? ['-nfa', ...(dtw ? ['-dtw', dtw] : [])] : []),
         '-pp', // print progress
-        '-oj', '-of', outBase, // write timed segments to transcript.json
+        speakers ? '-ojf' : '-oj', '-of', outBase, // write timed segments to transcript.json
         '-np', // no other console output
       ], {
         onStderr: (line) => {
@@ -183,14 +214,26 @@ export class FileTranscriber {
       });
 
       const json = JSON.parse(fs.readFileSync(`${outBase}.json`, 'utf8')) as WhisperCliJson;
-      const segments: Segment[] = (json.transcription || [])
-        .map((s) => {
-          const seg: Segment = { start: s.offsets.from / 1000, end: s.offsets.to / 1000, text: s.text.trim() };
-          const speaker = speakers && s.speaker !== undefined ? DIARIZE_SPEAKERS[s.speaker] : undefined;
-          if (speaker) seg.speaker = speaker;
-          return seg;
-        })
+      let segments: Segment[] = (json.transcription || [])
+        .map((s) => ({ start: s.offsets.from / 1000, end: s.offsets.to / 1000, text: s.text.trim() }))
         .filter((s) => s.text);
+      if (speakers) {
+        // who said each word: the side that was talking at that word's time (speakers.ts)
+        const timed: TimedSegment[] = (json.transcription || [])
+          .filter((s) => s.text.trim())
+          .map((s) => ({
+            start: s.offsets.from / 1000,
+            end: s.offsets.to / 1000,
+            text: s.text,
+            words: (s.tokens || [])
+              .filter((t) => !/^\[_.*\]$/.test(t.text.trim())) // [_BEG_], [_TT_…]: not words
+              .map((t) => ({
+                text: t.text,
+                time: t.t_dtw !== undefined && t.t_dtw >= 0 ? t.t_dtw / 100 : t.offsets.from / 1000,
+              })),
+          }));
+        segments = assignSpeakers(timed, channelLevels(readWavPcm(sidesWav), LEVELS_RATE));
+      }
       report(100);
       const elapsedMs = Date.now() - t0;
       this.log(`done: ${segments.length} segments in ${(elapsedMs / 1000).toFixed(1)} s`);

@@ -1,7 +1,9 @@
 // Meeting recording: your mic + the Mac's system audio → one .m4a file with two audio tracks:
 //   track 1 "Mix"      — both voices in both ears, each side levelled (what you hear when you play it)
-//   track 2 "Speakers" — the same levelled sides kept apart: left = your mic, right = system audio.
-//                        Hidden from playback; transcription uses it to label who spoke (task 27).
+//   track 2 "Speakers" — the two sides as they came in (not levelled): left = your mic, right =
+//                        system audio. Hidden from playback; transcription compares the two sides'
+//                        loudness to label who spoke (task 27). Not levelled on purpose: the
+//                        leveller would boost a faint echo up to speech level and blur the comparison.
 // Audio only, no transcription here.
 //
 //   bin/meeting-recorder (Swift)  ──raw PCM──►  ffmpeg  ──►  "Meeting <date>.part.m4a"
@@ -23,14 +25,13 @@ export const SPEAKERS_TRACK_TITLE = 'Speakers (L mic, R system)';
 // Both voices in both ears, at similar loudness:
 //   split you (left) / others (right) → level each side on its own (dynaudnorm, up to ×12,
 //   ~2 s look-ahead) → add together → limiter so nothing clips → mono  [mix].
-// Each levelled side is also copied (asplit) and joined back as stereo → [sides]:
-//   the 2nd track, so whisper can tell your mic from the system audio later.
+// The input (left = mic, right = system) is also copied as it is → [sides], the 2nd track.
 export const MIX_FILTER = [
-  '[0:a]channelsplit=channel_layout=stereo[you][others]',
-  '[you]highpass=f=80,afftdn=nr=12:nf=-50,dynaudnorm=f=250:g=9:m=12:p=0.9:t=0.002,asplit=2[y][ys]',
-  '[others]dynaudnorm=f=250:g=9:m=12:p=0.9:t=0.002,asplit=2[o][os]',
+  '[0:a]asplit=2[in][sides]',
+  '[in]channelsplit=channel_layout=stereo[you][others]',
+  '[you]highpass=f=80,afftdn=nr=12:nf=-50,dynaudnorm=f=250:g=9:m=12:p=0.9:t=0.002[y]',
+  '[others]dynaudnorm=f=250:g=9:m=12:p=0.9:t=0.002[o]',
   '[y][o]amix=inputs=2:normalize=0,alimiter=limit=0.95[mix]',
-  '[ys][os]join=inputs=2:channel_layout=stereo,alimiter=limit=0.95[sides]',
 ].join(';');
 
 /** ffmpeg arguments: raw stereo PCM on stdin → fragmented .m4a with the Mix + Speakers tracks. */
