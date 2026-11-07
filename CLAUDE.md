@@ -26,6 +26,7 @@ It is **installed** at `/Applications/L - Whisper.app` (opens at login) and **sh
 | Make **any** change (feature, fix, UI, setting) | skill **`update-app`** — follow it end to end |
 | Test or verify something without disturbing the user | skill **`test-app`** |
 | Diagnose "it stopped working" | skill **`troubleshoot-app`** |
+| Handle **someone else's** issue or pull request (triage, review, merge, credit) | skill **`handle-contributions`** |
 | Make a **new version** to share (version number, CHANGELOG, DMGs, tag) — or touch app ID / signing / settings keys | skill **`release-app`** |
 | What changed in each version | `CHANGELOG.md` |
 | History of each feature: measurements, decisions | `tasks/done/NN-*.md` |
@@ -39,7 +40,7 @@ It is **installed** at `/Applications/L - Whisper.app` (opens at login) and **sh
 5. **Everything stays local** — no cloud APIs, no network calls with audio or text. **One exception (user-approved, task 19):** downloading Whisper model files from the official whisper.cpp repo on Hugging Face (`src/main/models/model-downloader.ts`). **Second exception (user-approved, task 26): AI summary** — only when the user clicks Summarize (or Test), the transcript **text** (never audio) goes to the AI tool they chose in Settings (Claude Code `claude` or Codex `codex`, their own subscription), run from `src/main/ai/` with tools off. Default is Off. Nothing else may touch the network.
 6. **One task at a time, tracked:** new work → task file in `tasks/backlog/`, finished → Notes + move to `tasks/done/` + a line in `CHANGELOG.md` "Unreleased" (see `update-app`).
 7. **Ship through `npm run install-app`** — never copy an unsigned build into /Applications (permissions would reset).
-8. **Work on the `dev` branch.** Commit and push each finished task (push details: `CLAUDE.local.md`). Merge `dev` into `main` **only when the user asks**. Never commit models, samples, `dist/`, `bin/`, `tasks/` or secrets.
+8. **Work on the `dev` branch.** Commit each finished task locally; **push only after the user has tested it and says so** (push details: `CLAUDE.local.md`). Merge `dev` into `main` **only when the user asks**. Never commit models, samples, `dist/`, `bin/`, `tasks/` or secrets.
 9. Keep code simple and commented in plain words — the user learns from it. Code is **strict TypeScript** in `src/`; never edit `build/` (generated). Shared shapes go in `src/shared/types.ts`.
 
 ## Essential commands

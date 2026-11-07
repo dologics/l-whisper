@@ -17,10 +17,13 @@ The user wants minimal involvement but to **see every step** (say what you'll ru
 ## 0.5 Be on the dev branch
 `git switch dev && git pull` — all work happens on `dev`. `main` only changes when the user asks to merge.
 
-## 1. Create a task file
+## 1. Create a task file + GitHub issue
 - Next number after the highest in `tasks/done/` (e.g. `12-persist-history.md`) in `tasks/backlog/`.
-- Contents: **Goal**, **Steps**, **Done when**. Tell the user which task you're starting.
-- One task at a time.
+- Contents: **Goal**, **Steps**, **Done when**, and the issue link. Tell the user which task you're starting.
+- **GitHub issue** (the public record — the project is open source): reuse the issue if the work came from one;
+  otherwise `gh issue create -R dologics/l-whisper --label enhancement|bug --title … --body …` — what and why,
+  in plain words, nothing personal. Skip only if the user says so. Post decisions as short issue comments.
+- One task at a time. **Don't write code until the user says go.**
 
 ## 2. Make the change
 - Keep code simple and commented in plain words (the user reads it to learn).
