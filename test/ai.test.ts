@@ -142,6 +142,24 @@ test('prompt: instructions + title + plain transcript', () => {
   assert.match(p, /Title: Client call\n\nTranscript:\nLine one.\nLine two.\n$/);
 });
 
+test('prompt: meeting-minutes style — outcome first, five short sections, one page (task 32)', () => {
+  const p = buildSummaryPrompt('Hi.', 'Call');
+  // the sections, in this order
+  const order = ['## Overview', '## Decisions', '## Action items', '## Discussion', '## Open questions'].map((h) =>
+    p.indexOf(h)
+  );
+  assert.ok(
+    order.every((i, n) => i > 0 && (n === 0 || i > order[n - 1])),
+    `sections in order: ${order}`
+  );
+  assert.match(p, /\*\*Owner\*\* — task/); // owner-first action items
+  assert.match(p, /Unassigned/);
+  assert.match(p, /Never nest bullets/);
+  assert.match(p, /150–400 words/);
+  assert.match(p, /Leave out any section that would be empty/);
+  assert.doesNotMatch(p, /## Key points|## Summary/); // the old long sections are gone
+});
+
 test('meeting with speakers: the prompt says who the names are', () => {
   const p = buildSummaryPrompt('Sara: Hi.\n\nSpeaker 2: Hello.', 'Call', { mic: 'Sara', system: 'Speaker 2' });
   assert.ok(p.includes('"Sara" is the person who recorded this meeting'));

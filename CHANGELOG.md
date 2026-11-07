@@ -5,7 +5,7 @@ Versions: MAJOR.MINOR.PATCH — see the `release-app` skill for when each number
 
 ## Unreleased
 
-_(nothing yet — add one line per user-visible change as tasks finish)_
+- AI summaries are shorter and read like meeting minutes: an overview, decisions, action items with an owner, a few short discussion paragraphs and open questions — about one page, no nested bullets. Click **Regenerate** to update an older summary (#5).
 
 ## 1.2.0 — 2026-11-08
 
