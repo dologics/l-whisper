@@ -267,6 +267,10 @@
           <div class="content">
             <div class="card" data-tab="general">
               <div class="setting">
+                <div>Your name<div class="hint">Labels you in meeting transcripts. Optional, stays on this Mac</div></div>
+                <input type="text" class="text-input" id="userNameInput" maxlength="40" placeholder="Your name" spellcheck="false" autocomplete="off" />
+              </div>
+              <div class="setting">
                 <div>Language<div class="hint">English is about 2× faster than auto-detect</div></div>
                 <select id="languageSelect"></select>
               </div>
@@ -381,6 +385,11 @@
             <li><b>Library</b> — every meeting and transcribed file in one list, kept in Documents.</li>
             <li><b>Private</b> — your audio and text never leave this Mac.</li>
           </ul>
+          <label class="setup-name">
+            <span>Your name <span class="muted">(optional)</span></span>
+            <input type="text" class="text-input" id="setupUserName" maxlength="40" placeholder="e.g. Sara" spellcheck="false" autocomplete="off" />
+            <span class="muted small">Labels you in meeting transcripts. You can change it in Settings.</span>
+          </label>
         </section>
 
         <!-- 1. permissions -->

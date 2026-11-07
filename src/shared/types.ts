@@ -30,6 +30,8 @@ export interface SettingsValues {
   aiProvider?: 'off' | AiProvider;
   /** AI summary: the tool's path, only when the user chose it by hand (Settings → Choose…) */
   aiCliPath?: string;
+  /** the user's name (task 28), labels the mic side in meeting transcripts; missing/'' = no name */
+  userName?: string;
 }
 
 // ---------- AI summary (task 26) ----------
@@ -182,6 +184,8 @@ export interface AppState {
   isPackaged: boolean;
   openAtLogin: boolean;
   sounds: boolean;
+  /** Settings → Your name ('' = not set) */
+  userName: string;
   /** null = not known yet (the helper hasn't answered) */
   permissions: Record<PermissionKind, boolean | null>;
   dictations: DictationItem[];
@@ -268,6 +272,8 @@ export interface WhisperAppApi {
   setLanguage(code: string): Promise<void>;
   setOpenAtLogin(on: boolean): Promise<void>;
   setSounds(on: boolean): Promise<void>;
+  /** save the user's name (cleaned in main; '' clears it) */
+  setUserName(name: string): Promise<void>;
   copyText(text: string): Promise<void>;
   /** open System Settings at a permission's pane, or at Keyboard ('keyboard') */
   openPrivacySettings(kind: PermissionKind | 'keyboard'): Promise<void>;

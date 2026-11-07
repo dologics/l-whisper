@@ -6,6 +6,7 @@ Versions: MAJOR.MINOR.PATCH — see the `release-app` skill for when each number
 ## Unreleased
 
 - Settings is split into tabs: General · Dictation · Models · AI summary · Permissions. Links like "Settings → AI summary" open the right tab (#3).
+- New optional **Your name** in Settings → General and on the first-run Welcome page; it will label you in meeting transcripts (#2).
 
 ## 1.1.1 — 2026-11-07
 

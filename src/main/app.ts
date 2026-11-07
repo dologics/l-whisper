@@ -55,6 +55,7 @@ import { Settings } from './settings';
 import { aboutInfo, setAboutPanel } from './about';
 import { openSystemSettings } from './system-settings';
 import { errorMessage, run, sleep } from './util';
+import { cleanUserName } from './user-name';
 import { WhisperEngine } from './whisper';
 
 // Languages offered in the menu bar. Add more here: { code: 'ur', label: 'Urdu' }.
@@ -246,6 +247,7 @@ export class WhisperApp {
       isPackaged: app.isPackaged,
       openAtLogin: app.getLoginItemSettings().openAtLogin,
       sounds: this.settings.get('sounds'),
+      userName: cleanUserName(this.settings.get('userName')),
       permissions: {
         microphone: systemPreferences.getMediaAccessStatus('microphone') === 'granted',
         inputMonitoring: this.helperPermissions.input ?? null,
@@ -368,6 +370,14 @@ export class WhisperApp {
     this.settings.set('sounds', on);
     console.log(`[settings] sounds → ${on}`);
     if (on) this.sound('start'); // preview, so you hear what you turned on
+    this.pushState();
+  }
+
+  /** Settings → Your name (or first-run setup). Cleaned first; '' means no name. */
+  setUserName(raw: unknown): void {
+    const name = cleanUserName(raw);
+    this.settings.set('userName', name);
+    console.log(`[settings] your name → ${name ? `${name.length} characters` : 'not set'}`); // not the name itself
     this.pushState();
   }
 

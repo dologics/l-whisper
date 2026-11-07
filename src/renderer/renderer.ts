@@ -285,6 +285,10 @@ function render(state: AppState): void {
   $('#loginRow').hidden = !state.isPackaged; // only meaningful for the installed app
   $<HTMLInputElement>('#loginToggle').checked = state.openAtLogin;
   $<HTMLInputElement>('#soundsToggle').checked = state.sounds;
+  // Your name: the same value in Settings and in setup; never overwrite a field while you type in it
+  for (const input of $$<HTMLInputElement>('#userNameInput, #setupUserName')) {
+    if (document.activeElement !== input) input.value = state.userName;
+  }
   $$('[data-perm]').forEach((row) => {
     const kind = row.dataset.perm as PermissionKind;
     const allowed = state.permissions[kind];
@@ -309,6 +313,11 @@ $<HTMLSelectElement>('#languageSelect').addEventListener('change', (e) =>
 );
 $<HTMLInputElement>('#loginToggle').addEventListener('change', (e) =>
   api.setOpenAtLogin((e.target as HTMLInputElement).checked)
+);
+// Your name (Settings → General, setup Welcome page): saved when you leave the field or press Return.
+// Main cleans it (one line, no ":", max 40) and sends the cleaned name back in the next state.
+$$<HTMLInputElement>('#userNameInput, #setupUserName').forEach((input) =>
+  input.addEventListener('change', () => void api.setUserName(input.value))
 );
 $<HTMLInputElement>('#soundsToggle').addEventListener('change', (e) =>
   api.setSounds((e.target as HTMLInputElement).checked)

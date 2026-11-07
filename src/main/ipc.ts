@@ -20,6 +20,7 @@ export function registerIpc(whisper: WhisperApp): void {
   ipcMain.handle('app:set-language', (_e, code: string) => whisper.setLanguage(code));
   ipcMain.handle('app:set-open-at-login', (_e, on: unknown) => whisper.setOpenAtLogin(Boolean(on)));
   ipcMain.handle('app:set-sounds', (_e, on: unknown) => whisper.setSounds(Boolean(on)));
+  ipcMain.handle('app:set-user-name', (_e, name: unknown) => whisper.setUserName(name)); // cleaned there
   ipcMain.handle('app:copy-text', (_e, text: unknown) => clipboard.writeText(String(text)));
   ipcMain.handle('app:open-privacy', (_e, kind: PermissionKind | 'keyboard') => openSystemSettings(kind));
 

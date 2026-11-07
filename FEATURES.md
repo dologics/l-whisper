@@ -51,6 +51,7 @@ Tech stack: Electron + Node.js (TypeScript), with whisper.cpp as the local trans
 - Hold the dictation key = push-to-talk; double-tap = hands-free (tap to stop).
 - **Shareable**: two DMGs — Apple Silicon and Intel — with a how-to-open note (no Apple Developer ID; one-time "Open Anyway"). Needs macOS 14.2+ (task 22).
 - Credits: "© DoLogics · MIT License" + "Built by Mohsin Shoaib" — About window (tray menu), bottom of Settings, Finder Get Info; third-party licences inside the app (task 23).
+- **Your name** (task 28): optional, Settings → General and the setup Welcome page; stored only in settings.json; will label the mic side of meeting transcripts (task 27).
 - **Settings in tabs** (task 29): General · Dictation · Models · AI summary · Permissions; in-app links open the right tab.
 - **First-run setup** (task 21): Welcome → Permissions (live ✓) → Dictation key (with test) → Model download → Try it. Resumes where you left off; Settings → Run setup again. Existing installs skip it.
 - Choose the dictation key in Settings: **Fn**, or **two modifier keys** held together (⌃ ⌥ ⇧ ⌘, e.g. ⌃⌥), with a live key test (task 20).
