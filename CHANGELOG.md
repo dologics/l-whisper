@@ -5,9 +5,13 @@ Versions: MAJOR.MINOR.PATCH — see the `release-app` skill for when each number
 
 ## Unreleased
 
+_(nothing yet — add one line per user-visible change as tasks finish)_
+
+## 1.2.0 — 2026-11-08
+
 - New **About** page in the sidebar (app icon, version, licence, GitHub link, credits); the credits footer is gone from Settings.
 - Settings is split into tabs: General · Dictation · Models · AI summary · Permissions. Links like "Settings → AI summary" open the right tab (#3).
-- New optional **Your name** in Settings → General and on the first-run Welcome page; it will label you in meeting transcripts (#2).
+- New optional **Your name** in Settings → General and on the first-run Welcome page; it labels you in meeting transcripts (#2).
 - Library items show **Transcript · Summary · Files** tabs instead of stacked cards; the Files tab shows the saved TXT, SRT, VTT, JSON and summary files as they are, with Copy and Show in Finder (#4).
 - Meeting transcripts say who spoke: your microphone is labelled with your name (or "Speaker 1"), the other side "Speaker 2". Works for meetings recorded from this version on (#1).
 - A meeting's .txt transcript has no timestamps any more: one paragraph per speaker turn. The .srt / .vtt / .json keep timestamps; transcribed files keep timestamps everywhere (#1).

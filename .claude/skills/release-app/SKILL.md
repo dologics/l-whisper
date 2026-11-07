@@ -9,7 +9,7 @@ The app is shared as **two DMGs** made by `npm run release`:
 `dist/release/L-Whisper-<version>-arm64.dmg` (Apple Silicon) and `…-x64.dmg` (Intel), plus `L-Whisper-<version>-SHA256.txt`.
 No Apple Developer ID: the app is signed with the self-signed certificate **"Whisper Desktop Local"**, so a friend clicks **Open Anyway** once (explained in `How to open.txt` inside each DMG).
 
-Status (see CLAUDE.md "Where we are"): **1.1.1** (2026-11-07) is the current build — the first one published as a **GitHub Release** on `dologics/l-whisper` (public since 2026-11-07).
+Status (see CLAUDE.md "Where we are"): **1.2.0** (2026-11-08) is the current build. 1.1.1 (2026-11-07) was the first one published as a **GitHub Release** on `dologics/l-whisper` (public since 2026-11-07).
 
 ## 1. Version numbers (MAJOR.MINOR.PATCH)
 The version lives **only** in `package.json` (`"version"`). Everything else comes from it: Info.plist, the About window, Settings → About, DMG names.
@@ -62,4 +62,5 @@ Say each step before you run it (CLAUDE.md rule 1).
 |---|---|---|
 | 1.0.0 | 2026-11-05 | First shared build (tasks 1–22). Tag `v1.0.0`. DMGs: arm64 148 MB, x64 156 MB. |
 | 1.1.1 | 2026-11-07 | Open-source prep (task 23): MIT © DoLogics credits, licences in `Contents/Resources/licenses/`, `~` path in AI status. First version in the fresh repo + first GitHub Release. DMGs: arm64 155 MB, x64 163 MB. Tested: both DMGs (plist, licences, signature), arm64 as new user (tiny download + transcribe), x64 starts under Rosetta; update over 1.1.0 kept settings. |
+| 1.2.0 | 2026-11-08 | Tasks 27–31: speaker labels (hidden raw Speakers track + DTW word timing), Your name, Settings tabs, Library item tabs, About page. DMGs: arm64 155 MB, x64 163 MB. Tested: both DMGs (plist, licences, signature); arm64 as new user (setup, tiny download, transcribe); x64 starts under Rosetta (setup, About 1.2.0); update on this Mac kept permissions (helper ready) + settings. |
 | 1.1.0 | 2026-11-06 | Library (task 25) + AI summary (task 26). Tag `v1.1.0`. DMGs: arm64 148 MB, x64 156 MB. Both tested as new user (tiny model) incl. Library; update over 1.0.0 on this Mac kept settings + login item. Codex path untested (not installed). |

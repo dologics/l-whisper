@@ -1,6 +1,6 @@
 {
   "name": "whisper-desktop",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Local Whisper dictation, file transcription and meeting recording for macOS",
   "author": "DoLogics",
   "contributors": [
